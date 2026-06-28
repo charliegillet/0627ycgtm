@@ -54,7 +54,7 @@ export const updateMissionLivestream = mutation({
     shareUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    const update: any = {
+    const update: Record<string, string | undefined> = {
       liveUrl: args.liveUrl,
       sessionId: args.sessionId,
     };
