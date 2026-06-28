@@ -1,0 +1,126 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="980" viewBox="0 0 1400 980" role="img" aria-labelledby="title desc">
+  <title id="title">BEACHHEAD data and debug map</title>
+  <desc id="desc">Map of key Convex tables, files, and debugging sequence for the BEACHHEAD app.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f8fafc; }
+      .title { font: 700 34px Inter, ui-sans-serif, system-ui, sans-serif; fill: #102033; }
+      .subtitle { font: 500 18px Inter, ui-sans-serif, system-ui, sans-serif; fill: #526173; }
+      .h { font: 800 20px Inter, ui-sans-serif, system-ui, sans-serif; fill: #102033; }
+      .body { font: 500 15px Inter, ui-sans-serif, system-ui, sans-serif; fill: #314154; }
+      .small { font: 600 12px Inter, ui-sans-serif, system-ui, sans-serif; fill: #526173; }
+      .code { font: 650 12px "SF Mono", ui-monospace, Menlo, Consolas, monospace; fill: #243447; }
+      .box { fill: #ffffff; stroke: #d8e0ea; stroke-width: 2; }
+      .table { fill: #eef6ff; stroke: #93c5fd; stroke-width: 2; }
+      .table2 { fill: #ecfdf5; stroke: #86efac; stroke-width: 2; }
+      .table3 { fill: #fff7ed; stroke: #fdba74; stroke-width: 2; }
+      .table4 { fill: #f5f3ff; stroke: #c4b5fd; stroke-width: 2; }
+      .legacy { fill: #f1f5f9; stroke: #cbd5e1; stroke-width: 2; stroke-dasharray: 8 6; }
+      .arrow { stroke: #475569; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .arrowBlue { stroke: #0284c7; stroke-width: 3; fill: none; marker-end: url(#arrowBlue); }
+      .arrowGreen { stroke: #16a34a; stroke-width: 3; fill: none; marker-end: url(#arrowGreen); }
+      .arrowAmber { stroke: #d97706; stroke-width: 3; fill: none; marker-end: url(#arrowAmber); }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#475569"/>
+    </marker>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#0284c7"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#16a34a"/>
+    </marker>
+    <marker id="arrowAmber" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#d97706"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1400" height="980"/>
+  <text class="title" x="60" y="64">Data model and first debug path</text>
+  <text class="subtitle" x="60" y="96">Analogy: each table is a station on the assembly line. When something breaks, inspect the station that should have stamped the case file next.</text>
+
+  <rect class="box" x="60" y="140" width="1280" height="130" rx="14"/>
+  <text class="h" x="92" y="180">Files that define the shape</text>
+  <text class="code" x="92" y="214">schema.ts</text>
+  <text class="body" x="210" y="214">table contract and indexes</text>
+  <text class="code" x="92" y="244">lib/convergence.ts</text>
+  <text class="body" x="260" y="244">pure rule for route vs abstain</text>
+  <text class="code" x="642" y="214">providers/cache.ts</text>
+  <text class="body" x="804" y="214">credit guard and anti-poisoning cache</text>
+  <text class="code" x="642" y="244">queries/board.ts</text>
+  <text class="body" x="790" y="244">UI board contract</text>
+
+  <rect class="table" x="80" y="330" width="190" height="88" rx="12"/>
+  <text class="h" x="106" y="364">signalEvents</text>
+  <text class="small" x="106" y="390">raw ingress + dedupe</text>
+  <rect class="table" x="310" y="330" width="190" height="88" rx="12"/>
+  <text class="h" x="352" y="364">runs</text>
+  <text class="small" x="336" y="390">pipeline lifecycle</text>
+  <rect class="table2" x="540" y="330" width="190" height="88" rx="12"/>
+  <text class="h" x="574" y="364">companies</text>
+  <text class="small" x="566" y="390">domain + enrichment</text>
+  <rect class="table2" x="770" y="330" width="190" height="88" rx="12"/>
+  <text class="h" x="820" y="364">leads</text>
+  <text class="small" x="800" y="390">stage + primary rep target</text>
+  <rect class="table3" x="1000" y="330" width="190" height="88" rx="12"/>
+  <text class="h" x="1046" y="364">scores</text>
+  <text class="small" x="1028" y="390">decision + rationale</text>
+  <rect class="table4" x="1230" y="330" width="110" height="88" rx="12"/>
+  <text class="h" x="1248" y="364">actions</text>
+  <text class="small" x="1248" y="390">pending gate</text>
+
+  <path class="arrowBlue" d="M270 374 L310 374"/>
+  <path class="arrowGreen" d="M500 374 L540 374"/>
+  <path class="arrowGreen" d="M730 374 L770 374"/>
+  <path class="arrowAmber" d="M960 374 L1000 374"/>
+  <path class="arrow" d="M1190 374 L1230 374"/>
+
+  <rect class="table3" x="300" y="490" width="220" height="92" rx="12"/>
+  <text class="h" x="346" y="524">traces</text>
+  <text class="small" x="326" y="550">append-only stage log</text>
+  <text class="code" x="326" y="572">by_run index</text>
+  <rect class="table3" x="590" y="490" width="220" height="92" rx="12"/>
+  <text class="h" x="642" y="524">apiCache</text>
+  <text class="small" x="616" y="550">provider/op/domain cache</text>
+  <text class="code" x="616" y="572">never synthetic</text>
+  <rect class="legacy" x="880" y="490" width="220" height="92" rx="12"/>
+  <text class="h" x="938" y="524">signals</text>
+  <text class="small" x="912" y="550">legacy viz bridge</text>
+  <text class="code" x="912" y="572">3D particles</text>
+  <rect class="legacy" x="1130" y="490" width="190" height="92" rx="12"/>
+  <text class="h" x="1188" y="524">logs</text>
+  <text class="small" x="1160" y="550">legacy activity feed</text>
+
+  <path class="arrowAmber" d="M405 418 C405 455 410 455 410 490"/>
+  <path class="arrowAmber" d="M635 418 C635 455 700 455 700 490"/>
+  <path class="arrow" d="M1095 418 C1095 455 990 455 990 490"/>
+  <path class="arrow" d="M1095 418 C1110 455 1225 455 1225 490"/>
+
+  <rect class="box" x="80" y="650" width="388" height="225" rx="14"/>
+  <text class="h" x="112" y="690">If input does nothing</text>
+  <text class="body" x="112" y="724">Check:</text>
+  <text class="code" x="112" y="754">app/api/signal/route.ts</text>
+  <text class="code" x="112" y="782">convex/http.ts</text>
+  <text class="code" x="112" y="810">detect.recordSignal</text>
+  <text class="small" x="112" y="842">Expected: signalEvents row and running run.</text>
+
+  <rect class="box" x="506" y="650" width="388" height="225" rx="14"/>
+  <text class="h" x="538" y="690">If evidence looks wrong</text>
+  <text class="body" x="538" y="724">Check:</text>
+  <text class="code" x="538" y="754">providers/orangeSlice.ts</text>
+  <text class="code" x="538" y="782">providers/cache.ts</text>
+  <text class="code" x="538" y="810">traces + apiCache</text>
+  <text class="small" x="538" y="842">Expected: live, live(cached), fixture, or fixture(live-failed).</text>
+
+  <rect class="box" x="932" y="650" width="388" height="225" rx="14"/>
+  <text class="h" x="964" y="690">If UI looks stale</text>
+  <text class="body" x="964" y="724">Check:</text>
+  <text class="code" x="964" y="754">queries/board.liveBoard</text>
+  <text class="code" x="964" y="782">hooks/useAgentData.ts</text>
+  <text class="code" x="964" y="810">ContentWhiteboard.tsx</text>
+  <text class="small" x="964" y="842">Expected: latest score per company appears as a card.</text>
+
+  <rect x="80" y="910" width="1240" height="42" rx="10" fill="#ffffff" stroke="#d8e0ea"/>
+  <text class="small" x="110" y="936">Current live path: detect.recordSignal schedules detect.runPipeline. pipeline.ts contains a durable Workflow version, but it is not the live path yet.</text>
+</svg>
+

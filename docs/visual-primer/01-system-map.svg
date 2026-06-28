@@ -1,0 +1,137 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="940" viewBox="0 0 1400 940" role="img" aria-labelledby="title desc">
+  <title id="title">BEACHHEAD system map</title>
+  <desc id="desc">Architecture map showing Next.js UI, Convex spine, provider actions, database tables, and reactive board updates.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f7fafc; }
+      .panel { fill: #ffffff; stroke: #d8e0ea; stroke-width: 2; }
+      .panelDark { fill: #0b1220; stroke: #1f2a3d; stroke-width: 2; }
+      .title { font: 700 34px Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; fill: #102033; }
+      .subtitle { font: 500 18px Inter, ui-sans-serif, system-ui, sans-serif; fill: #526173; }
+      .h { font: 700 22px Inter, ui-sans-serif, system-ui, sans-serif; fill: #102033; }
+      .hDark { font: 700 22px Inter, ui-sans-serif, system-ui, sans-serif; fill: #edf5ff; }
+      .body { font: 500 15px Inter, ui-sans-serif, system-ui, sans-serif; fill: #314154; }
+      .bodyDark { font: 500 15px Inter, ui-sans-serif, system-ui, sans-serif; fill: #c9d7e8; }
+      .small { font: 600 13px Inter, ui-sans-serif, system-ui, sans-serif; fill: #526173; }
+      .code { font: 600 13px "SF Mono", ui-monospace, Menlo, Consolas, monospace; fill: #223247; }
+      .codeDark { font: 600 13px "SF Mono", ui-monospace, Menlo, Consolas, monospace; fill: #dbeafe; }
+      .tag { font: 700 12px Inter, ui-sans-serif, system-ui, sans-serif; fill: #ffffff; }
+      .arrow { stroke: #526173; stroke-width: 3; fill: none; marker-end: url(#arrow); }
+      .arrowBlue { stroke: #0ea5e9; stroke-width: 3; fill: none; marker-end: url(#arrowBlue); }
+      .arrowGreen { stroke: #16a34a; stroke-width: 3; fill: none; marker-end: url(#arrowGreen); }
+      .arrowAmber { stroke: #d97706; stroke-width: 3; fill: none; marker-end: url(#arrowAmber); }
+      .dash { stroke-dasharray: 8 8; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#526173"/>
+    </marker>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#0ea5e9"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#16a34a"/>
+    </marker>
+    <marker id="arrowAmber" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#d97706"/>
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1400" height="940"/>
+  <text class="title" x="60" y="62">BEACHHEAD: realtime GTM signal engine</text>
+  <text class="subtitle" x="60" y="94">Analogy: Convex is the air traffic control tower. Signals radio in, inspectors fan out, the runway log updates, and actions need approval before takeoff.</text>
+
+  <rect class="panel" x="60" y="140" width="300" height="255" rx="12"/>
+  <text class="h" x="88" y="178">Inputs</text>
+  <rect x="88" y="205" width="226" height="54" rx="8" fill="#e0f2fe" stroke="#7dd3fc"/>
+  <text class="body" x="108" y="228">Browser command bar</text>
+  <text class="code" x="108" y="248">app/page.tsx</text>
+  <rect x="88" y="282" width="226" height="54" rx="8" fill="#fef3c7" stroke="#fbbf24"/>
+  <text class="body" x="108" y="305">External webhook</text>
+  <text class="code" x="108" y="325">POST /signal</text>
+  <rect x="88" y="356" width="226" height="54" rx="8" fill="#dcfce7" stroke="#86efac"/>
+  <text class="body" x="108" y="379">Cron poll</text>
+  <text class="code" x="108" y="399">crons.interval</text>
+
+  <rect class="panelDark" x="450" y="138" width="500" height="575" rx="16"/>
+  <text class="hDark" x="482" y="178">Convex spine</text>
+  <text class="bodyDark" x="482" y="204">The load-bearing runtime, database, scheduler, and live-query layer.</text>
+
+  <rect x="488" y="235" width="202" height="72" rx="10" fill="#10253d" stroke="#38bdf8"/>
+  <text class="bodyDark" x="510" y="263">Ingress</text>
+  <text class="codeDark" x="510" y="287">http.ts + detect.ts</text>
+  <rect x="710" y="235" width="202" height="72" rx="10" fill="#172033" stroke="#fbbf24"/>
+  <text class="bodyDark" x="732" y="263">Scheduler</text>
+  <text class="codeDark" x="732" y="287">runAfter(0)</text>
+
+  <rect x="488" y="340" width="424" height="98" rx="10" fill="#0f2b22" stroke="#34d399"/>
+  <text class="bodyDark" x="510" y="369">Pipeline action</text>
+  <text class="codeDark" x="510" y="393">detect.runPipeline</text>
+  <text class="bodyDark" x="510" y="417">Fans out funding, hiring, and tech in parallel.</text>
+
+  <rect x="488" y="474" width="202" height="86" rx="10" fill="#2b1f10" stroke="#f59e0b"/>
+  <text class="bodyDark" x="510" y="502">Score</text>
+  <text class="codeDark" x="510" y="526">scoreCompany</text>
+  <text class="small" x="510" y="546" fill="#f7d08a">calls pure decide()</text>
+  <rect x="710" y="474" width="202" height="86" rx="10" fill="#251636" stroke="#c084fc"/>
+  <text class="bodyDark" x="732" y="502">Act</text>
+  <text class="codeDark" x="732" y="526">proposeAction</text>
+  <text class="small" x="732" y="546" fill="#d8b4fe">pending approval</text>
+
+  <rect x="488" y="598" width="424" height="76" rx="10" fill="#111827" stroke="#94a3b8"/>
+  <text class="bodyDark" x="510" y="628">Reactive queries</text>
+  <text class="codeDark" x="510" y="652">queries/board.ts, health.ts, lineage.ts</text>
+
+  <rect class="panel" x="1038" y="140" width="302" height="332" rx="12"/>
+  <text class="h" x="1066" y="178">Provider inspectors</text>
+  <rect x="1066" y="205" width="226" height="64" rx="8" fill="#fff7ed" stroke="#fdba74"/>
+  <text class="body" x="1086" y="230">Orange Slice</text>
+  <text class="code" x="1086" y="250">funding / hiring / tech</text>
+  <rect x="1066" y="292" width="226" height="64" rx="8" fill="#f5f3ff" stroke="#c4b5fd"/>
+  <text class="body" x="1086" y="317">Fiber</text>
+  <text class="code" x="1086" y="337">enrich accent, off core legs</text>
+  <rect x="1066" y="379" width="226" height="64" rx="8" fill="#fee2e2" stroke="#fca5a5"/>
+  <text class="body" x="1086" y="404">OpenAI optional</text>
+  <text class="code" x="1086" y="424">rationale rewrite only</text>
+
+  <rect class="panel" x="1038" y="525" width="302" height="260" rx="12"/>
+  <text class="h" x="1066" y="563">Next.js UI</text>
+  <rect x="1066" y="590" width="226" height="54" rx="8" fill="#e0f2fe" stroke="#7dd3fc"/>
+  <text class="body" x="1086" y="614">React Flow lead board</text>
+  <text class="code" x="1086" y="634">ContentWhiteboard</text>
+  <rect x="1066" y="664" width="226" height="54" rx="8" fill="#ecfeff" stroke="#67e8f9"/>
+  <text class="body" x="1086" y="688">3D source swarm</text>
+  <text class="code" x="1086" y="708">HorizonScene</text>
+  <rect x="1066" y="738" width="226" height="54" rx="8" fill="#fef3c7" stroke="#fbbf24"/>
+  <text class="body" x="1086" y="762">Command overlay</text>
+  <text class="code" x="1086" y="782">CommandOverlay</text>
+
+  <rect class="panel" x="60" y="500" width="300" height="285" rx="12"/>
+  <text class="h" x="88" y="538">Convex tables</text>
+  <text class="body" x="88" y="570">Current GTM core:</text>
+  <text class="code" x="88" y="596">signalEvents, runs</text>
+  <text class="code" x="88" y="622">companies, leads</text>
+  <text class="code" x="88" y="648">scores, actions</text>
+  <text class="code" x="88" y="674">traces, apiCache</text>
+  <line x1="88" y1="699" x2="314" y2="699" stroke="#d8e0ea" stroke-width="2"/>
+  <text class="body" x="88" y="730">Legacy visual shell:</text>
+  <text class="code" x="88" y="756">agents, signals, logs</text>
+
+  <path class="arrowBlue" d="M360 230 C405 230 405 270 488 270"/>
+  <path class="arrowAmber" d="M360 309 C405 309 405 270 488 270"/>
+  <path class="arrowGreen" d="M360 383 C410 383 405 270 488 270"/>
+  <path class="arrow" d="M690 270 L710 270"/>
+  <path class="arrowGreen" d="M700 307 L700 340"/>
+  <path class="arrowGreen" d="M912 389 C980 389 980 238 1066 238"/>
+  <path class="arrowGreen" d="M912 389 C982 389 982 324 1066 324"/>
+  <path class="arrowAmber" d="M912 516 C984 516 984 411 1066 411"/>
+  <path class="arrowAmber" d="M589 438 L589 474"/>
+  <path class="arrowAmber" d="M690 517 L710 517"/>
+  <path class="arrow" d="M700 560 L700 598"/>
+  <path class="arrowBlue" d="M912 636 C990 636 990 617 1066 617"/>
+  <path class="arrowBlue dash" d="M912 636 C990 636 990 691 1066 691"/>
+  <path class="arrow" d="M488 636 C400 636 400 642 360 642"/>
+
+  <rect x="60" y="842" width="1280" height="48" rx="10" fill="#eef6ff" stroke="#bfdbfe"/>
+  <text class="small" x="88" y="872">Rule of thumb: actions can call networks but cannot touch ctx.db directly; queries/mutations touch db; reactive queries drive the board without custom WebSocket code.</text>
+</svg>
+
