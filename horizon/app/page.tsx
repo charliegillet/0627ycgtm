@@ -153,7 +153,7 @@ export default function Home() {
   const handleResetAll = useCallback(async () => {
     if (
       confirm(
-        "RESET ALL? This deletes companies, leads, scores, actions, runs and logs. This cannot be undone."
+        "RESET ALL? This deletes the BEACHHEAD tables (companies, leads, signal events, scores, actions, runs, traces, API cache) and the legacy viz tables (logs, signals). This cannot be undone."
       )
     ) {
       await resetAll();
