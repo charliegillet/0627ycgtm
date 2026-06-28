@@ -9,16 +9,13 @@
 
 import { memo } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import { MinusCircle } from "lucide-react";
+import { MinusCircle, ShieldAlert, Check } from "lucide-react";
 import {
   LEG_COLORS,
   LEG_BADGES,
   type BoardItem,
 } from "../hooks/useAgentData";
 import { LEG_ORDER, legFired, firedLegCount } from "../lib/legs";
-
-const MONO = "'JetBrains Mono', 'SF Mono', 'Cascadia Code', monospace";
-const AMBER = "#f59e0b";
 
 export const AbstainCard = memo(function AbstainCard({ data }: NodeProps) {
   const item = data as unknown as BoardItem;
@@ -33,136 +30,68 @@ export const AbstainCard = memo(function AbstainCard({ data }: NodeProps) {
 
   return (
     <div
-      style={{
-        width: 270,
-        background: "repeating-linear-gradient(135deg, #0a0c14 0px, #0a0c14 8px, #0c0e16 8px, #0c0e16 16px)",
-        border: `1px dashed ${AMBER}40`,
-        borderRadius: 3,
-        overflow: "hidden",
-        fontFamily: MONO,
-        opacity: 0.92,
-      }}
+      className="w-[310px] glass-panel border border-amber-500/20 rounded-xl overflow-hidden font-sans opacity-90 shadow-2xl relative transition-all duration-300 hover:scale-[1.02] hover:border-amber-500/40 hud-glow-amber"
     >
       <Handle
         type="target"
         position={Position.Left}
-        style={{
-          width: 5,
-          height: 5,
-          background: "#334",
-          border: "1px solid #0a0c14",
-          borderRadius: "50%",
-        }}
+        className="!w-[8px] !h-[8px] !bg-zinc-700 !border-2 !border-zinc-950 !rounded-full"
       />
 
+      {/* Decorative corner status indicator */}
+      <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 border-amber-500/30" />
+      <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 border-amber-500/30" />
+
       {/* Header: identity + ABSTAIN marker */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          padding: 10,
-          borderBottom: `1px dashed ${AMBER}25`,
-        }}
-      >
-        <div
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: 3,
-            background: `${AMBER}12`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
-        >
-          <MinusCircle size={14} style={{ color: AMBER }} />
+      <div className="flex items-center gap-3 p-4 border-b border-white/5 relative bg-gradient-to-r from-amber-500/[0.02] to-transparent">
+        <div className="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center shrink-0">
+          <MinusCircle size={18} className="text-amber-500 animate-pulse" />
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              color: "#9aa3b5",
-              lineHeight: "14px",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {company?.name || company?.domain || "Unknown company"}
+        <div className="flex-1 min-w-0">
+          <div className="text-[13px] font-bold text-zinc-300 tracking-wide leading-tight overflow-hidden text-ellipsis whitespace-nowrap">
+            {company?.name || company?.domain || "Unknown Company"}
           </div>
-          <div
-            style={{
-              fontSize: 8,
-              color: "#556",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
+          <div className="text-[10.5px] text-zinc-500 font-mono tracking-tight font-medium mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap">
             {company?.domain}
           </div>
         </div>
-        <span
-          style={{
-            padding: "2px 6px",
-            borderRadius: 2,
-            background: `${AMBER}18`,
-            border: `1px solid ${AMBER}40`,
-            fontSize: 7,
-            fontWeight: 700,
-            letterSpacing: 1,
-            color: AMBER,
-            flexShrink: 0,
-          }}
-        >
-          ABSTAIN
+        <span className="px-2 py-0.5 rounded bg-amber-500/10 border border-amber-500/25 text-[8.5px] font-bold tracking-widest text-amber-500 shrink-0 font-display">
+          ABSTAINED
         </span>
       </div>
 
       {/* Body: which leg fired + not-routing rationale */}
-      <div style={{ padding: 10 }}>
-        <div
-          style={{
-            fontSize: 10,
-            fontWeight: 700,
-            color: AMBER,
-            letterSpacing: 0.5,
-            marginBottom: 6,
-          }}
-        >
-          {legsFired}/3 legs — not routing
+      <div className="p-4 bg-black/30">
+        <div className="text-[11px] font-bold text-amber-500/90 tracking-wide mb-3 flex items-center gap-1.5 font-display">
+          <ShieldAlert size={12} className="text-amber-500" />
+          {legsFired} OF 3 LEGS VERIFIED — ROUTING HALTED
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+        {/* Badges display */}
+        <div className="flex items-center gap-2 mb-3.5">
           {LEG_ORDER.map((name) => {
             const fired = legFired(score, name);
             const c = LEG_COLORS[name];
             return (
               <div
                 key={name}
+                className="px-2 py-0.5 rounded-md text-[9px] font-bold tracking-wider font-display flex items-center gap-1"
                 style={{
-                  padding: "2px 6px",
-                  borderRadius: 2,
-                  background: fired ? `${c}20` : "#0e1118",
-                  border: `1px solid ${fired ? `${c}40` : "#141822"}`,
-                  fontSize: 8,
-                  fontWeight: 700,
-                  letterSpacing: 0.5,
-                  color: fired ? c : "#334",
+                  background: fired ? `${c}10` : "rgba(255,255,255,0.01)",
+                  border: `1px solid ${fired ? `${c}20` : "rgba(255,255,255,0.03)"}`,
+                  color: fired ? c : "#52525b",
                 }}
               >
-                {LEG_BADGES[name]}
+                {fired && <Check size={8} style={{ color: c }} />}
+                {LEG_BADGES[name].toUpperCase()}
               </div>
             );
           })}
         </div>
 
-        <div style={{ fontSize: 8, color: "#778", lineHeight: "13px" }}>
+        <div className="text-[11.5px] text-zinc-400 leading-relaxed font-medium p-2.5 rounded-lg bg-white/[0.01] border border-white/5">
           {score?.rationale ||
-            "Insufficient signal to route — needs at least 2 corroborating legs."}
+            "Insufficient signal correlation to route this prospect. High-fidelity plays require a convergence of at least 2 verified signals."}
         </div>
       </div>
     </div>

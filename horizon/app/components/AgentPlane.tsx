@@ -78,56 +78,30 @@ export function AgentPlane({
         position={[0, 0, 0.01]}
         scale={0.3}
         distanceFactor={3}
-        style={{ pointerEvents: "none" }}
+        className="pointer-events-none"
       >
-        <div
-          style={{
-            width: 640,
-            height: 400,
-            background: "#0a0b0f",
-            borderRadius: 4,
-            overflow: "hidden",
-            position: "relative",
-          }}
-        >
+        <div className="w-[640px] h-[400px] bg-zinc-950 rounded-xl overflow-hidden relative shadow-2xl border border-white/5">
           {liveUrl ? (
             <iframe
               src={liveUrl}
-              style={{
-                width: "100%",
-                height: "100%",
-                border: "none",
-                pointerEvents: "none",
-              }}
+              className="w-full h-full border-none pointer-events-none"
               title={`Agent ${agentId} Stream`}
               allow="autoplay"
             />
           ) : (
             <div
-              style={{
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
-                color: agentColor,
-                fontFamily: "'JetBrains Mono', monospace",
-                gap: 8,
-              }}
+              className="w-full h-full flex flex-col items-center justify-center font-sans gap-3"
+              style={{ color: agentColor }}
             >
               <div
+                className="w-10 h-10 rounded-full border-2 animate-[spin_1s_linear_infinite]"
                 style={{
-                  width: 32,
-                  height: 32,
-                  border: `2px solid ${agentColor}40`,
+                  borderColor: `${agentColor}30`,
                   borderTopColor: agentColor,
-                  borderRadius: "50%",
-                  animation: "spin 1s linear infinite",
                 }}
               />
-              <span style={{ fontSize: 10, opacity: 0.7 }}>
-                {agentRole} source · standby
+              <span className="text-sm font-medium tracking-wide">
+                {agentRole} <span className="opacity-50">· Standby</span>
               </span>
             </div>
           )}
@@ -147,39 +121,23 @@ export function AgentPlane({
         position={[0, -0.78, 0]}
         center
         distanceFactor={6}
-        style={{ pointerEvents: "none" }}
+        className="pointer-events-none"
       >
-        <div
-          style={{
-            fontFamily: "'JetBrains Mono', 'SF Mono', monospace",
-            textAlign: "center",
-            whiteSpace: "nowrap",
-          }}
-        >
+        <div className="font-sans text-center whitespace-nowrap bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 shadow-xl">
           <div
+            className="text-[10px] uppercase tracking-[2px] flex items-center justify-center gap-1.5"
             style={{
-              fontSize: 10,
               color: agentColor,
-              textTransform: "uppercase",
-              letterSpacing: 2,
               textShadow: `0 0 8px ${agentColor}40`,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 6,
             }}
           >
-            <span style={{ fontWeight: 700 }}>{agentName}</span>
+            <span className="font-bold">{agentName}</span>
             {isActive && (
               <span
+                className="inline-block w-[5px] h-[5px] rounded-full animate-[pulse-opacity_1.5s_infinite]"
                 style={{
-                  display: "inline-block",
-                  width: 5,
-                  height: 5,
-                  borderRadius: "50%",
                   backgroundColor: agentColor,
                   boxShadow: `0 0 6px ${agentColor}`,
-                  animation: "pulse 1.5s infinite",
                 }}
               />
             )}
@@ -187,71 +145,33 @@ export function AgentPlane({
 
           {!isActive && (
             <div
-              style={{
-                marginTop: 3,
-                fontSize: 7,
-                color: `${agentColor}70`,
-                letterSpacing: 1.5,
-                textTransform: "uppercase",
-                fontWeight: 500,
-              }}
+              className="mt-[3px] text-[8px] tracking-[1.5px] uppercase font-medium"
+              style={{ color: `${agentColor}80` }}
             >
               {agentRole}
             </div>
           )}
 
           {isActive && (
-            <div
-              style={{
-                marginTop: 3,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 6,
-              }}
-            >
+            <div className="mt-[3px] flex items-center justify-center gap-1.5">
               <span
-                style={{
-                  fontSize: 7,
-                  color: `${agentColor}90`,
-                  letterSpacing: 1.5,
-                  textTransform: "uppercase",
-                  fontWeight: 500,
-                }}
+                className="text-[8px] tracking-[1.5px] uppercase font-medium"
+                style={{ color: `${agentColor}90` }}
               >
                 {agentRole} · {status}
               </span>
               <div
-                style={{
-                  width: 32,
-                  height: 2,
-                  background: `${agentColor}15`,
-                  borderRadius: 1,
-                  overflow: "hidden",
-                }}
+                className="w-8 h-[2px] rounded-[1px] overflow-hidden"
+                style={{ background: `${agentColor}15` }}
               >
                 <div
-                  style={{
-                    width: "60%",
-                    height: "100%",
-                    background: agentColor,
-                    borderRadius: 1,
-                    animation: "pulse 2s infinite",
-                  }}
+                  className="w-[60%] h-full rounded-[1px] animate-[pulse-opacity_2s_infinite]"
+                  style={{ background: agentColor }}
                 />
               </div>
             </div>
           )}
         </div>
-        <style>{`
-          @keyframes spin {
-            to { transform: rotate(360deg); }
-          }
-          @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.3; }
-          }
-        `}</style>
       </Html>
     </group>
   );

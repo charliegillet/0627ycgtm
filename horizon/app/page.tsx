@@ -20,50 +20,12 @@ const HorizonScene = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: "#020408",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontFamily: "'JetBrains Mono', monospace",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 16,
-          }}
-        >
-          <div
-            style={{
-              width: 24,
-              height: 24,
-              border: "2px solid #141822",
-              borderTopColor: "#00f0ff",
-              borderRadius: "50%",
-              animation: "spin 0.8s linear infinite",
-            }}
-          />
-          <span
-            style={{
-              fontSize: 10,
-              color: "#334",
-              letterSpacing: 3,
-              textTransform: "uppercase",
-            }}
-          >
+      <div className="absolute inset-0 bg-black flex items-center justify-center font-sans">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-6 h-6 rounded-full border-2 border-zinc-800 border-t-white animate-[spin_0.8s_linear_infinite]" />
+          <span className="text-xs text-zinc-400 tracking-widest uppercase font-medium">
             Initializing Command Center
           </span>
-          <style>{`
-            @keyframes spin {
-              to { transform: rotate(360deg); }
-            }
-          `}</style>
         </div>
       </div>
     ),
@@ -72,6 +34,7 @@ const HorizonScene = dynamic(
 
 export default function Home() {
   const [isDeploying, setIsDeploying] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [icpStatus, setIcpStatus] = useState<string | null>(null);
 
   // ---- Queries -----------------------------------------------------------
@@ -180,14 +143,15 @@ export default function Home() {
   }, [resetAll]);
 
   return (
-    <div style={{ position: "fixed", inset: 0, overflow: "hidden", background: "#020408" }}>
+    <div className="fixed inset-0 overflow-hidden bg-black text-zinc-100 font-sans">
       <ResizablePane
-        defaultWidth={520}
+        defaultWidth={420}
         minWidth={320}
         maxWidth={960}
+        isSidebarOpen={isSidebarOpen}
         left={<ContentWhiteboard items={items} isRunning={isRunning} />}
         right={
-          <div style={{ position: "relative", width: "100%", height: "100%" }}>
+          <div className="relative w-full h-full">
             <HorizonScene
               agents={allAgents || []}
               signals={signals}
@@ -205,6 +169,8 @@ export default function Home() {
         logs={recentLogs || []}
         activeAgentCount={runningCount}
         stats={pipelineStats}
+        isSidebarOpen={isSidebarOpen}
+        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         icpStatus={icpStatus}
         onCreateMission={handleCreateMission}
         onStopAll={handleStopAll}

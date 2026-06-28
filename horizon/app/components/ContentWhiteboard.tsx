@@ -21,6 +21,7 @@ import {
   type NodeTypes,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import { Terminal } from "lucide-react";
 
 import { ContentNode } from "./ContentNode";
 import { AbstainCard } from "./AbstainCard";
@@ -31,13 +32,13 @@ const nodeTypes: NodeTypes = {
   abstain: AbstainCard,
 };
 
-const NODE_W = 280;
-const NODE_H = 240;
-const GAP_X = 40;
-const GAP_Y = 40;
-const COLS = 3;
-const ORIGIN_X = 80;
-const ORIGIN_Y = 80;
+const NODE_W = 310;
+const NODE_H = 260;
+const GAP_X = 50;
+const GAP_Y = 50;
+const COLS = 2; // Form factor is split 50/50, so 2 columns are perfect for high readability!
+const ORIGIN_X = 60;
+const ORIGIN_Y = 100;
 
 interface ContentWhiteboardProps {
   items: BoardItem[];
@@ -104,118 +105,60 @@ export function ContentWhiteboard({ items, isRunning }: ContentWhiteboardProps) 
 
   const rfStyle = useMemo(
     () => ({
-      background: "#020408",
+      background: "#020204",
     }),
     []
   );
 
   const minimapStyle = useMemo(
     () => ({
-      backgroundColor: "#080a10",
-      maskColor: "rgba(0, 0, 0, 0.7)",
+      backgroundColor: "rgba(4, 4, 8, 0.85)",
+      borderColor: "rgba(255, 255, 255, 0.08)",
     }),
     []
   );
 
   return (
-    <div style={{ width: "100%", height: "100%", position: "relative" }}>
-      {/* Header bar */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 10,
-          padding: "8px 12px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          background: "linear-gradient(180deg, #020408 0%, transparent 100%)",
-          pointerEvents: "none",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+    <div className="w-full h-full relative">
+      {/* HUD Header bar */}
+      <div className="absolute top-0 left-0 right-0 z-10 px-6 py-4 flex items-center justify-between bg-gradient-to-b from-[#020204]/90 via-[#020204]/40 to-transparent pointer-events-none">
+        <div className="flex items-center gap-3 py-1.5 px-3 rounded-full bg-zinc-950/80 border border-white/5 shadow-xl backdrop-blur-md">
           <div
-            style={{
-              width: 6,
-              height: 6,
-              borderRadius: "50%",
-              background: isRunning ? "#00f0ff" : "#334",
-              boxShadow: isRunning ? "0 0 6px #00f0ff" : "none",
-            }}
+            className={`w-2.5 h-2.5 rounded-full transition-all duration-500 ${
+              isRunning ? "bg-[#10b981] animate-pulse shadow-[0_0_10px_#10b981]" : "bg-zinc-700"
+            }`}
           />
-          <span
-            style={{
-              fontSize: 9,
-              fontWeight: 700,
-              color: "#00f0ff",
-              letterSpacing: 2,
-              textTransform: "uppercase",
-              fontFamily: "'JetBrains Mono', monospace",
-            }}
-          >
-            Lead Board
-          </span>
-          <span
-            style={{
-              fontSize: 9,
-              color: "#334",
-              fontFamily: "'JetBrains Mono', monospace",
-            }}
-          >
-            {items.length} companies
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-zinc-100 tracking-widest uppercase font-display">
+              ACTIVE INTELLIGENCE RECORD
+            </span>
+            <div className="w-[1px] h-3 bg-white/10" />
+            <span className="text-xs font-bold text-zinc-400 font-display">
+              {items.length} COMPANIES TRACKED
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Empty state */}
+      {/* Empty state styled like a secure terminal diagnostic */}
       {items.length === 0 && (
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            zIndex: 5,
-            pointerEvents: "none",
-          }}
-        >
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              border: "1px solid #141822",
-              borderRadius: 3,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <div
-              style={{
-                width: 12,
-                height: 12,
-                border: "1px dashed #2a2f3e",
-                borderRadius: 2,
-              }}
-            />
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 z-5 pointer-events-none font-sans">
+          <div className="w-14 h-14 border border-white/10 rounded-2xl flex items-center justify-center bg-zinc-950/40 shadow-2xl relative">
+            <div className="absolute inset-0.5 rounded-xl border border-dashed border-white/5 animate-[pulse-opacity_2s_infinite]" />
+            <Terminal size={22} className="text-zinc-500 animate-[pulse-opacity_1.5s_infinite]" />
           </div>
-          <span
-            style={{
-              fontSize: 10,
-              color: "#334",
-              letterSpacing: 1,
-              fontFamily: "'JetBrains Mono', monospace",
-            }}
-          >
-            {isRunning
-              ? "Detecting signals & scoring companies..."
-              : "Describe your ICP or paste a domain to begin"}
-          </span>
+          <div className="flex flex-col items-center gap-1.5">
+            <span className="text-[13px] font-bold text-zinc-300 font-display tracking-widest uppercase">
+              {isRunning
+                ? "DECRYPTING PARALLEL SIGNALS & SCORING..."
+                : "WAR ROOM INACTIVE"}
+            </span>
+            <p className="text-[11px] text-zinc-500 font-medium text-center max-w-[280px] leading-normal font-sans">
+              {isRunning
+                ? "Ingesting data streams. Real-time convergence assessment is currently underway."
+                : "Describe your ideal customer profile or insert a specific domain above to initiate active tracking."}
+            </p>
+          </div>
         </div>
       )}
 
@@ -239,28 +182,24 @@ export function ContentWhiteboard({ items, isRunning }: ContentWhiteboardProps) 
       >
         <Background
           variant={BackgroundVariant.Dots}
-          gap={20}
-          size={0.8}
-          color="#141822"
+          gap={32}
+          size={1}
+          color="rgba(255, 255, 255, 0.03)"
         />
         <Controls
           showInteractive={false}
-          style={{
-            background: "#080a10",
-            border: "1px solid #141822",
-            borderRadius: 3,
-          }}
+          className="!bg-zinc-950/95 !border-white/10 !rounded-xl overflow-hidden shadow-2xl backdrop-blur-md"
         />
         <MiniMap
           style={minimapStyle}
           nodeColor={(n) => {
-            if (n.type === "abstain") return "#f59e0b";
+            if (n.type === "abstain") return "rgba(245, 158, 11, 0.8)";
             const score = (n.data as { score?: { score?: number } })?.score?.score;
             if (typeof score === "number") {
-              if (score >= 70) return "#10b981";
-              if (score >= 50) return "#f59e0b";
+              if (score >= 70) return "rgba(16, 185, 129, 0.8)";
+              if (score >= 50) return "rgba(245, 158, 11, 0.8)";
             }
-            return "#445";
+            return "#3f3f46";
           }}
           pannable
           zoomable

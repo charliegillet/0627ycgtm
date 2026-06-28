@@ -9,7 +9,7 @@
 
 import { memo, useState } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import { Building2, ChevronDown, ChevronUp, Check, X } from "lucide-react";
+import { Building2, ChevronDown, ChevronUp, Check, X, Layers, CheckCircle } from "lucide-react";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -55,9 +55,15 @@ function legSummary(name: LegName, leg: Leg | null): string {
 }
 
 function scoreColor(score: number): string {
-  if (score >= 70) return "#10b981";
-  if (score >= 50) return "#f59e0b";
-  return "#667";
+  if (score >= 70) return "#10b981"; // emerald
+  if (score >= 50) return "#f59e0b"; // amber
+  return "#a1a1aa"; // zinc-400
+}
+
+function scoreGlowClass(score: number): string {
+  if (score >= 70) return "hud-glow-green border-emerald-500/20 hover:border-emerald-500/50";
+  if (score >= 50) return "hud-glow-amber border-amber-500/20 hover:border-amber-500/50";
+  return "border-zinc-800 hover:border-zinc-500";
 }
 
 export const ContentNode = memo(function ContentNode({ data }: NodeProps) {
@@ -101,116 +107,57 @@ export const ContentNode = memo(function ContentNode({ data }: NodeProps) {
 
   return (
     <div
-      style={{
-        width: 270,
-        background: "#0a0c14",
-        border: "1px solid #141822",
-        borderRadius: 3,
-        overflow: "hidden",
-        fontFamily: MONO,
-        cursor: "pointer",
-        transition: "border-color 0.15s ease",
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.borderColor = accent + "60";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.borderColor = "#141822";
-      }}
+      className={`w-[310px] glass-panel border rounded-xl overflow-hidden font-sans cursor-pointer shadow-2xl transition-all duration-300 ease-out hover:scale-[1.02] ${score ? scoreGlowClass(scoreVal) : "border-white/10 hover:border-zinc-600"}`}
       onClick={() => setOpen((v) => !v)}
     >
       <Handle
         type="source"
         position={Position.Right}
-        style={{
-          width: 5,
-          height: 5,
-          background: accent,
-          border: "1px solid #0a0c14",
-          borderRadius: "50%",
-        }}
+        className="!w-[8px] !h-[8px] !border-2 !border-zinc-950 !rounded-full transition-colors"
+        style={{ background: accent }}
       />
       <Handle
         type="target"
         position={Position.Left}
-        style={{
-          width: 5,
-          height: 5,
-          background: "#334",
-          border: "1px solid #0a0c14",
-          borderRadius: "50%",
-        }}
+        className="!w-[8px] !h-[8px] !bg-zinc-700 !border-2 !border-zinc-950 !rounded-full"
       />
 
+      {/* Decorative cyber corner indicators */}
+      <div className="absolute top-0 left-0 w-2 h-2 border-t-2 border-l-2 opacity-30" style={{ borderColor: accent }} />
+      <div className="absolute top-0 right-0 w-2 h-2 border-t-2 border-r-2 opacity-30" style={{ borderColor: accent }} />
+
       {/* Header: company identity + score */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          padding: 10,
-          borderBottom: "1px solid #141822",
-        }}
-      >
+      <div className="flex items-center gap-3 p-4 border-b border-white/5 relative bg-gradient-to-r from-white/[0.01] to-transparent">
         <div
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: 3,
-            background: `${accent}15`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
+          className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0 border transition-all duration-300"
+          style={{ 
+            background: `${accent}12`,
+            borderColor: `${accent}25`
           }}
         >
-          <Building2 size={14} style={{ color: accent }} />
+          <Building2 size={18} style={{ color: accent }} />
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              color: "#c8d0e0",
-              lineHeight: "14px",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
-            {company?.name || company?.domain || "Unknown company"}
+        <div className="flex-1 min-w-0">
+          <div className="text-[13px] font-bold text-white tracking-wide leading-tight overflow-hidden text-ellipsis whitespace-nowrap">
+            {company?.name || company?.domain || "Unknown Company"}
           </div>
-          <div
-            style={{
-              fontSize: 8,
-              color: "#556",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
+          <div className="text-[10.5px] text-zinc-400 mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap font-mono tracking-tight font-medium">
             {company?.domain}
             {company?.industry ? ` · ${company.industry}` : ""}
           </div>
         </div>
-        {/* Score chip */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-end",
-            flexShrink: 0,
-          }}
-        >
-          <span style={{ fontSize: 18, fontWeight: 700, color: accent, lineHeight: "18px" }}>
+        
+        {/* HUD Score Display */}
+        <div className="flex flex-col items-end shrink-0 pl-2">
+          <span className="text-3xl font-bold leading-none tracking-tight font-display" style={{ color: accent }}>
             {score ? Math.round(scoreVal) : "—"}
           </span>
-          <span style={{ fontSize: 7, color: "#445", letterSpacing: 1 }}>SCORE</span>
+          <span className="text-[8px] text-zinc-500 font-bold tracking-widest mt-1 uppercase font-display">ICP SCORE</span>
         </div>
       </div>
 
-      {/* Per-leg badges */}
-      <div style={{ padding: "8px 10px", display: "flex", alignItems: "center", gap: 6 }}>
+      {/* Per-leg status badges */}
+      <div className="flex items-center gap-2 px-4 py-2.5 bg-white/[0.02] border-b border-white/5">
         {LEG_ORDER.map((name) => {
           const isFired = legFired(score, name);
           const c = LEG_COLORS[name];
@@ -218,28 +165,26 @@ export const ContentNode = memo(function ContentNode({ data }: NodeProps) {
             <div
               key={name}
               title={`${name}: ${legSummary(name, legs?.[name] ?? null)}`}
+              className="px-2 py-0.5 rounded-md text-[9px] font-bold tracking-wider font-display flex items-center gap-1 transition-all"
               style={{
-                padding: "2px 6px",
-                borderRadius: 2,
-                background: isFired ? `${c}20` : "#0e1118",
-                border: `1px solid ${isFired ? `${c}40` : "#141822"}`,
-                fontSize: 8,
-                fontWeight: 700,
-                letterSpacing: 0.5,
-                color: isFired ? c : "#334",
+                background: isFired ? `${c}12` : "rgba(255,255,255,0.01)",
+                border: `1px solid ${isFired ? `${c}25` : "rgba(255,255,255,0.03)"}`,
+                color: isFired ? c : "#52525b",
               }}
             >
-              {LEG_BADGES[name]}
+              {isFired && <div className="w-1 h-1 rounded-full animate-ping" style={{ backgroundColor: c }} />}
+              {LEG_BADGES[name].toUpperCase()}
             </div>
           );
         })}
-        <span style={{ marginLeft: "auto", fontSize: 8, color: "#445" }}>
-          {fired.length}/3 legs
+        <span className="ml-auto text-[8px] font-bold text-zinc-400 bg-white/5 border border-white/5 px-2 py-0.5 rounded-md uppercase font-display">
+          {fired.length}/3 LEGS
         </span>
+        
         {open ? (
-          <ChevronUp size={10} style={{ color: "#445" }} />
+          <ChevronUp size={13} className="text-zinc-500 ml-1 hover:text-white transition-colors" />
         ) : (
-          <ChevronDown size={10} style={{ color: "#445" }} />
+          <ChevronDown size={13} className="text-zinc-500 ml-1 hover:text-white transition-colors" />
         )}
       </div>
 
@@ -328,67 +273,74 @@ export const ContentNode = memo(function ContentNode({ data }: NodeProps) {
       {/* Lineage drawer (revealed on click) */}
       {open && (
         <div
-          style={{
-            padding: "0 10px 10px",
-            borderTop: "1px solid #141822",
-            paddingTop: 8,
-          }}
+          className="px-4 pb-4 pt-3.5 bg-black/40 border-t border-white/5"
           onClick={(e) => e.stopPropagation()}
         >
           {score?.rationale && (
-            <div
-              style={{
-                fontSize: 8,
-                color: "#889",
-                lineHeight: "13px",
-                marginBottom: 8,
-              }}
-            >
+            <div className="text-[11.5px] text-zinc-300 leading-relaxed mb-4 p-2.5 rounded-lg bg-white/[0.02] border border-white/5 font-medium">
               {score.rationale}
             </div>
           )}
-          {LEG_ORDER.map((name) => {
-            const leg = legs?.[name] ?? null;
-            const c = LEG_COLORS[name];
-            const contribution = score?.rubric?.perLeg?.[name];
-            return (
-              <div
-                key={name}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "3px 0",
-                  opacity: leg ? 1 : 0.4,
-                }}
-              >
+          
+          <div className="text-[8.5px] font-bold text-zinc-500 tracking-wider font-display uppercase mb-2 flex items-center gap-1.5">
+            <Layers size={10} />
+            CONVERGENCE VERIFICATION SIGNALS
+          </div>
+          
+          <div className="flex flex-col gap-2">
+            {LEG_ORDER.map((name) => {
+              const leg = legs?.[name] ?? null;
+              const c = LEG_COLORS[name];
+              const contribution = score?.rubric?.perLeg?.[name];
+              return (
                 <div
-                  style={{
-                    width: 4,
-                    height: 4,
-                    borderRadius: "50%",
-                    background: leg ? c : "#334",
-                    flexShrink: 0,
+                  key={name}
+                  className="flex items-center gap-2.5 p-2 rounded border transition-all"
+                  style={{ 
+                    opacity: leg ? 1 : 0.4,
+                    backgroundColor: leg ? `${c}04` : "transparent",
+                    borderColor: leg ? `${c}10` : "rgba(255,255,255,0.01)"
                   }}
-                />
-                <span style={{ fontSize: 8, color: c, fontWeight: 600, width: 36 }}>
-                  {LEG_BADGES[name]}
-                </span>
-                <span style={{ fontSize: 8, color: "#667", flex: 1 }}>
-                  {LEG_SOURCE[name]}
-                </span>
-                <span style={{ fontSize: 8, color: "#889" }}>
-                  {legSummary(name, leg)}
-                  {typeof contribution === "number" ? ` (+${Math.round(contribution)})` : ""}
-                </span>
-              </div>
-            );
-          })}
-          {typeof company?.icpFit === "number" && (
-            <div style={{ fontSize: 8, color: "#445", marginTop: 6 }}>
-              ICP fit: {Math.round(company.icpFit)}
+                >
+                  <div
+                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                    style={{ 
+                      background: leg ? c : "#3f3f46",
+                      boxShadow: leg ? `0 0 6px ${c}` : "none"
+                    }}
+                  />
+                  <span className="text-[9.5px] font-bold w-12 uppercase tracking-wider font-display" style={{ color: c }}>
+                    {LEG_BADGES[name]}
+                  </span>
+                  <span className="text-[10px] font-medium text-zinc-400 flex-1 truncate">
+                    {LEG_SOURCE[name]}
+                  </span>
+                  <span className="text-[10px] font-mono text-zinc-300 whitespace-nowrap tracking-tight">
+                    {legSummary(name, leg)}
+                    {typeof contribution === "number" ? (
+                      <span className="text-zinc-500 font-semibold font-sans ml-1 text-[9px]">
+                        (+{Math.round(contribution)})
+                      </span>
+                    ) : ""}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          
+          <div className="flex items-center justify-between text-[9px] font-semibold text-zinc-500 mt-4 pt-3.5 border-t border-white/5 font-display tracking-widest">
+            <div className="flex items-center gap-1">
+              <CheckCircle size={10} className="text-emerald-500" />
+              ICP MATCH RATIO
             </div>
-          )}
+            {typeof company?.icpFit === "number" ? (
+              <span className="text-zinc-200 bg-white/5 border border-white/5 px-2 py-0.5 rounded font-mono font-bold text-[10px]">
+                {Math.round(company.icpFit)}%
+              </span>
+            ) : (
+              <span className="text-zinc-500 font-mono">N/A</span>
+            )}
+          </div>
         </div>
       )}
     </div>

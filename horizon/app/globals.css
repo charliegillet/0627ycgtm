@@ -1,26 +1,96 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #020204;
+  --foreground: #fafafa;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --font-sans: var(--font-jakarta);
+  --font-display: var(--font-rajdhani);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@layer utilities {
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  @keyframes pulse-opacity {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Cyber HUD ambient glows and animations */
+  .hud-glow-green {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+  }
+  .hud-glow-amber {
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.1);
+  }
+  .hud-glow-emerald {
+    box-shadow: 0 0 25px rgba(16, 185, 129, 0.2);
+  }
+  .glass-panel {
+    background: rgba(4, 4, 8, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom scrollbar for webkit */
+::-webkit-scrollbar { 
+  width: 6px; 
+}
+::-webkit-scrollbar-track { 
+  background: transparent; 
+}
+::-webkit-scrollbar-thumb { 
+  background: #18181b; 
+  border-radius: 4px; 
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+::-webkit-scrollbar-thumb:hover { 
+  background: #27272a; 
+}
+
+/* Custom React Flow CSS overrides for clean dark styling */
+.react-flow__controls {
+  background: rgba(9, 9, 11, 0.8) !important;
+  backdrop-filter: blur(8px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5) !important;
+}
+.react-flow__controls-button {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+  color: #a1a1aa !important;
+}
+.react-flow__controls-button:hover {
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #ffffff !important;
+}
+.react-flow__minimap {
+  background: rgba(4, 4, 8, 0.85) !important;
+  backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.7) !important;
+}
+.react-flow__minimap-mask {
+  fill: rgba(0, 0, 0, 0.7) !important;
 }
