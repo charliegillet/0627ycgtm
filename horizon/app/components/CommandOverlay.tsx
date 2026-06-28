@@ -29,7 +29,8 @@ interface CommandOverlayProps {
   logs: LogEntry[];
   activeAgentCount: number;
   stats?: PipelineStats;
-  onCreateMission: (prompt: string) => void;
+  icpStatus?: string | null;
+  onCreateMission: (prompt: string) => Promise<boolean>;
   onStopAll: () => void;
   onResetAll: () => void;
 }
@@ -40,6 +41,7 @@ export function CommandOverlay({
   logs,
   activeAgentCount,
   stats,
+  icpStatus,
   onCreateMission,
   onStopAll,
   onResetAll,
@@ -53,11 +55,11 @@ export function CommandOverlay({
     }
   }, [logs]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
-    onCreateMission(query.trim());
-    setQuery("");
+    const success = await onCreateMission(query.trim());
+    if (success) setQuery("");
   };
 
   return (
@@ -394,6 +396,18 @@ export function CommandOverlay({
               </button>
             )}
           </form>
+
+          {icpStatus && (
+            <div
+              style={{
+                fontSize: 9,
+                letterSpacing: 1,
+                color: icpStatus.startsWith("Resolved") ? "#10b981" : "#f59e0b",
+              }}
+            >
+              {icpStatus}
+            </div>
+          )}
 
           {!isRunning && (
             <div
