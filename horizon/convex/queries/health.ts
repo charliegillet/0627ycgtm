@@ -1,3 +1,4 @@
+import { v } from "convex/values";
 import { action, query } from "../_generated/server";
 
 /**
@@ -51,5 +52,40 @@ export const pipelineStats = query({
       routed,
       abstained,
     };
+  },
+});
+
+/**
+ * failedRuns — reactive list of recent runs that ended in "failed", newest
+ * first, for an at-a-glance health view. Bounded so the subscription stays
+ * cheap; `limit` caps the number returned (default 50).
+ */
+export const failedRuns = query({
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, { limit }) => {
+    return await ctx.db
+      .query("runs")
+      .withIndex("by_status", (q) => q.eq("status", "failed"))
+      .order("desc")
+      .take(limit ?? 50);
+  },
+});
+
+/**
+ * stuckRuns — reactive list of runs still "running" whose `startedAt` is older
+ * than `thresholdMs` (default 5 minutes), i.e. likely wedged. Returned
+ * newest-first. No schema change: we read the by_status index for "running"
+ * and filter on startedAt.
+ */
+export const stuckRuns = query({
+  args: { thresholdMs: v.optional(v.number()) },
+  handler: async (ctx, { thresholdMs }) => {
+    const cutoff = Date.now() - (thresholdMs ?? 5 * 60 * 1000);
+    return await ctx.db
+      .query("runs")
+      .withIndex("by_status", (q) => q.eq("status", "running"))
+      .order("desc")
+      .filter((q) => q.lt(q.field("startedAt"), cutoff))
+      .collect();
   },
 });
