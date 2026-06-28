@@ -26,6 +26,7 @@ import type * as providers_cache from "../providers/cache.js";
 import type * as providers_fiber from "../providers/fiber.js";
 import type * as providers_fixtures from "../providers/fixtures.js";
 import type * as providers_orangeSlice from "../providers/orangeSlice.js";
+import type * as providers_router from "../providers/router.js";
 import type * as queries_board from "../queries/board.js";
 import type * as queries_health from "../queries/health.js";
 import type * as queries_lineage from "../queries/lineage.js";
@@ -57,6 +58,7 @@ declare const fullApi: ApiFromModules<{
   "providers/fiber": typeof providers_fiber;
   "providers/fixtures": typeof providers_fixtures;
   "providers/orangeSlice": typeof providers_orangeSlice;
+  "providers/router": typeof providers_router;
   "queries/board": typeof queries_board;
   "queries/health": typeof queries_health;
   "queries/lineage": typeof queries_lineage;

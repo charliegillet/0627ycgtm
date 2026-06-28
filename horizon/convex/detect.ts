@@ -147,18 +147,18 @@ export const runPipeline = internalAction({
     // Three legs in parallel — each provider action caches + traces internally
     // (passing runId so per-leg traces land on this run's timeline).
     const [funding, hiring, tech] = await Promise.all([
-      ctx.runAction(internal.providers.orangeSlice.callOrangeSlice, {
-        op: "funding",
+      ctx.runAction(internal.providers.router.callLeg, {
+        leg: "funding",
         domain: args.companyDomain,
         runId: args.runId,
       }),
-      ctx.runAction(internal.providers.orangeSlice.callOrangeSlice, {
-        op: "hiring",
+      ctx.runAction(internal.providers.router.callLeg, {
+        leg: "hiring",
         domain: args.companyDomain,
         runId: args.runId,
       }),
-      ctx.runAction(internal.providers.orangeSlice.callOrangeSlice, {
-        op: "tech",
+      ctx.runAction(internal.providers.router.callLeg, {
+        leg: "tech",
         domain: args.companyDomain,
         runId: args.runId,
       }),
