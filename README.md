@@ -3,8 +3,8 @@
 _The real-time GTM war room that finds your in-market accounts — and tells you when it's NOT sure._
 
 [![AI Growth Hackathon](https://img.shields.io/badge/Built_at-Y_Combinator-F0652F.svg?logo=ycombinator)](https://events.ycombinator.com/OrangeSliceHackathon)
-[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen.svg)](‹your live-keyed deployment URL›)
-[![Demo Video](https://img.shields.io/badge/Demo-Video-ff69b4.svg)](‹record the live run per horizon/docs/demo-runbook.md›)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen.svg)](#)
+[![Demo Video](https://img.shields.io/badge/Demo-Video-ff69b4.svg)](#)
 
 **POWERED BY OUR SPONSORS**
 
@@ -44,16 +44,16 @@ The whole flow animates live on a reactive lead board and a 3D agent swarm with 
 
 ## Demo
 
-**Watch the demo:** ‹record the live run per horizon/docs/demo-runbook.md›
+**Watch the demo:** [YouTube / Loom](#)
 
-**Live app:** ‹your live-keyed deployment URL›
+**Live app:** [Production deployment](#)
 
 ### What the demo shows
 
 | Surface | Link | What judges should look for |
 | --- | --- | --- |
-| **Live Dashboard** | [Production deployment](‹your live-keyed deployment URL›) | Enter an ICP. Watch accounts populate with live scores. Verify that weak signals receive an "ABSTAIN" card and strong signals (≥2/3 legs) are pushed to the human-approval routing queue. |
-| **Demo Video** | [YouTube / Loom](‹record the live run per horizon/docs/demo-runbook.md›) | End-to-end visual walkthrough showing the Slack handoff gate and the reactive 3D swarm updates. |
+| **Live Dashboard** | [Production deployment](#) | Enter an ICP. Watch accounts populate with live scores. Verify that weak signals receive an "ABSTAIN" card and strong signals (≥2/3 legs) are pushed to the human-approval routing queue. |
+| **Demo Video** | [YouTube / Loom](#) | End-to-end visual walkthrough showing the Slack handoff gate and the reactive 3D swarm updates. |
 
 ## How It Works
 
