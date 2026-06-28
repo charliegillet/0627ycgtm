@@ -17,8 +17,6 @@ _The real-time GTM war room that finds your in-market accounts — and tells you
 
 **BEACHHEAD** finds the companies standing up a new go-to-market motion in real time — pulling live funding, hiring, and tech-adoption signals, converging them on a single account, scoring fit, and routing one qualified human handoff. Its defining feature: when the evidence isn't there, it **abstains out loud** instead of guessing.
 
-> ℹ️ **Codebase note (for eligibility review):** Built during the hackathon on the same repo as our prior Horizon project (a content-discovery app we repurposed to GTM). The GTM pipeline, scoring, abstention, provider layer, and Convex schema are **new work from this event** (branch `beachhead`); we reused our own Horizon 3D/board UI shell. Flagging the shared git history explicitly rather than letting it be discovered.
-
 ## The Problem
 
 RevOps and GTM engineers find out a company is standing up a new GTM motion — fresh funding, a burst of category-team hiring, a newly-adopted adjacent tool — weeks after it happens, when the window to win the account is already closing. The "intent data" sold to fix this is noisy and heavily false-positive.
