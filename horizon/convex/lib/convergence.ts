@@ -63,10 +63,13 @@ export function decide(legs: Legs): Decision {
     tech: round(scoreTech(legs.tech)),
   };
 
+  // A leg has "fired" only when it contributes POSITIVE points. A present leg
+  // that scores 0 (e.g. funding too old to count, tech with present:false) is
+  // NOT fired — it is real-but-zero evidence and must not inflate the count.
   const legsFired =
-    (legs.funding !== null ? 1 : 0) +
-    (legs.hiring !== null ? 1 : 0) +
-    (legs.tech !== null ? 1 : 0);
+    (perLeg.funding > 0 ? 1 : 0) +
+    (perLeg.hiring > 0 ? 1 : 0) +
+    (perLeg.tech > 0 ? 1 : 0);
 
   const score = round(perLeg.funding + perLeg.hiring + perLeg.tech);
 
@@ -79,7 +82,7 @@ export function decide(legs: Legs): Decision {
   const abstained = legsFired < 2 || confidence < 0.5;
 
   const rationale = abstained
-    ? buildAbstainRationale(legs, legsFired, perLeg)
+    ? buildAbstainRationale(legsFired, perLeg)
     : buildRouteRationale(legsFired, perLeg, score);
 
   return {
@@ -94,11 +97,10 @@ export function decide(legs: Legs): Decision {
 }
 
 function buildAbstainRationale(
-  legs: Legs,
   legsFired: number,
   perLeg: Record<string, number>
 ): string {
-  const fired = describeFired(legs, perLeg);
+  const fired = describeFired(perLeg);
   if (legsFired === 0) {
     return "Abstaining: 0/3 legs fired — insufficient signal to route this account.";
   }
@@ -114,27 +116,17 @@ function buildRouteRationale(
   perLeg: Record<string, number>,
   score: number
 ): string {
-  const fired = describeFired(
-    null,
-    perLeg
-  );
+  const fired = describeFired(perLeg);
   return `Routing: ${legsFired}/3 legs fired (${fired}) for a converged score of ${score}/100.`;
 }
 
-// Human-readable summary of which legs contributed.
-function describeFired(
-  legs: Legs | null,
-  perLeg: Record<string, number>
-): string {
+// Human-readable summary of which legs FIRED (contributed positive points).
+// A present-but-zero leg is not listed: it did not fire.
+function describeFired(perLeg: Record<string, number>): string {
   const parts: string[] = [];
   for (const name of ["funding", "hiring", "tech"]) {
     const pts = perLeg[name];
-    if (legs) {
-      const leg = legs[name as keyof Legs];
-      if (leg !== null) parts.push(`${name} ${pts}pts`);
-    } else if (pts > 0) {
-      parts.push(`${name} ${pts}pts`);
-    }
+    if (pts > 0) parts.push(`${name} ${pts}pts`);
   }
   return parts.length > 0 ? parts.join(", ") : "none";
 }

@@ -8,6 +8,8 @@ export default defineConfig({
     include: [
       "convex/lib/**/*.test.ts",
       "convex/**/*.integration.test.ts",
+      // Pure UI helper tests (e.g. card badge "fired" logic in app/lib).
+      "app/**/*.test.ts",
     ],
     server: { deps: { inline: ["convex-test"] } },
   },

@@ -9,7 +9,10 @@
 
 import { memo, useState } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
-import { Building2, ChevronDown, ChevronUp } from "lucide-react";
+import { Building2, ChevronDown, ChevronUp, Check, X } from "lucide-react";
+import { useMutation } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import type { Id } from "../../convex/_generated/dataModel";
 import {
   LEG_COLORS,
   LEG_BADGES,
@@ -17,9 +20,17 @@ import {
   type Leg,
   type LegName,
 } from "../hooks/useAgentData";
+import { LEG_ORDER, legFired, firedLegs } from "../lib/legs";
 
 const MONO = "'JetBrains Mono', 'SF Mono', 'Cascadia Code', monospace";
-const LEG_ORDER: LegName[] = ["funding", "hiring", "tech"];
+
+// Color for a settled (non-pending) action state in the approval gate.
+const ACTION_STATUS_COLOR: Record<string, string> = {
+  approved: "#10b981",
+  sent: "#10b981",
+  blocked: "#dc2626",
+  failed: "#dc2626",
+};
 
 // Human-readable source for each leg, shown in the lineage drawer.
 const LEG_SOURCE: Record<LegName, string> = {
@@ -54,10 +65,38 @@ export const ContentNode = memo(function ContentNode({ data }: NodeProps) {
   const company = item.company;
   const score = item.score;
   const legs = score?.legs ?? null;
+  const action = item.action ?? null;
   const [open, setOpen] = useState(false);
+  const [busy, setBusy] = useState(false);
+
+  const approve = useMutation(api.act.approve);
+  const block = useMutation(api.act.block);
+
+  const onApprove = async () => {
+    if (!action || busy) return;
+    setBusy(true);
+    try {
+      await approve({ actionId: action._id as Id<"actions"> });
+    } finally {
+      setBusy(false);
+    }
+  };
+  const onBlock = async () => {
+    if (!action || busy) return;
+    setBusy(true);
+    try {
+      await block({ actionId: action._id as Id<"actions"> });
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const scoreVal = score?.score ?? 0;
-  const firedLegs = LEG_ORDER.filter((n) => legs?.[n]);
+  // A leg "fired" only when it contributed POSITIVE points (matches the
+  // convergence rubric). A present-but-zero leg is real evidence that did not
+  // fire, so it must not inflate the "X/3 legs" count or light up its badge.
+  // Shared with AbstainCard via app/lib/legs so the two cards cannot drift.
+  const fired = firedLegs(score);
   const accent = score ? scoreColor(scoreVal) : "#334";
 
   return (
@@ -173,7 +212,7 @@ export const ContentNode = memo(function ContentNode({ data }: NodeProps) {
       {/* Per-leg badges */}
       <div style={{ padding: "8px 10px", display: "flex", alignItems: "center", gap: 6 }}>
         {LEG_ORDER.map((name) => {
-          const fired = !!legs?.[name];
+          const isFired = legFired(score, name);
           const c = LEG_COLORS[name];
           return (
             <div
@@ -182,12 +221,12 @@ export const ContentNode = memo(function ContentNode({ data }: NodeProps) {
               style={{
                 padding: "2px 6px",
                 borderRadius: 2,
-                background: fired ? `${c}20` : "#0e1118",
-                border: `1px solid ${fired ? `${c}40` : "#141822"}`,
+                background: isFired ? `${c}20` : "#0e1118",
+                border: `1px solid ${isFired ? `${c}40` : "#141822"}`,
                 fontSize: 8,
                 fontWeight: 700,
                 letterSpacing: 0.5,
-                color: fired ? c : "#334",
+                color: isFired ? c : "#334",
               }}
             >
               {LEG_BADGES[name]}
@@ -195,7 +234,7 @@ export const ContentNode = memo(function ContentNode({ data }: NodeProps) {
           );
         })}
         <span style={{ marginLeft: "auto", fontSize: 8, color: "#445" }}>
-          {firedLegs.length}/3 legs
+          {fired.length}/3 legs
         </span>
         {open ? (
           <ChevronUp size={10} style={{ color: "#445" }} />
@@ -203,6 +242,88 @@ export const ContentNode = memo(function ContentNode({ data }: NodeProps) {
           <ChevronDown size={10} style={{ color: "#445" }} />
         )}
       </div>
+
+      {/* Approval gate — Approve/Block a pending action, else show its state. */}
+      {action && (
+        <div
+          style={{
+            padding: "0 10px 8px",
+            display: "flex",
+            alignItems: "center",
+            gap: 6,
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {action.status === "pending" ? (
+            <>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={onApprove}
+                title="Approve — send the Slack action"
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 4,
+                  padding: "4px 6px",
+                  background: "#10b98115",
+                  border: "1px solid #10b98140",
+                  borderRadius: 2,
+                  color: "#10b981",
+                  fontSize: 8,
+                  fontWeight: 700,
+                  letterSpacing: 0.5,
+                  cursor: busy ? "default" : "pointer",
+                  opacity: busy ? 0.5 : 1,
+                  fontFamily: MONO,
+                }}
+              >
+                <Check size={9} /> APPROVE
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={onBlock}
+                title="Block — mark this lead dead, do not send"
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 4,
+                  padding: "4px 6px",
+                  background: "#dc262615",
+                  border: "1px solid #dc262640",
+                  borderRadius: 2,
+                  color: "#dc2626",
+                  fontSize: 8,
+                  fontWeight: 700,
+                  letterSpacing: 0.5,
+                  cursor: busy ? "default" : "pointer",
+                  opacity: busy ? 0.5 : 1,
+                  fontFamily: MONO,
+                }}
+              >
+                <X size={9} /> BLOCK
+              </button>
+            </>
+          ) : (
+            <span
+              style={{
+                fontSize: 8,
+                fontWeight: 700,
+                letterSpacing: 1,
+                textTransform: "uppercase",
+                color: ACTION_STATUS_COLOR[action.status] ?? "#445",
+              }}
+            >
+              {action.type} · {action.status}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* Lineage drawer (revealed on click) */}
       {open && (
