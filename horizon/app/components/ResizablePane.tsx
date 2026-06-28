@@ -63,16 +63,11 @@ export function ResizablePane({
   }, [minWidth, maxWidth]);
 
   return (
-    <div style={{ display: "flex", width: "100%", height: "100%", overflow: "hidden" }}>
+    <div className="flex w-full h-full overflow-hidden">
       {/* Left pane */}
       <div
-        style={{
-          width,
-          flexShrink: 0,
-          height: "100%",
-          overflow: "hidden",
-          position: "relative",
-        }}
+        style={{ width }}
+        className="shrink-0 h-full overflow-hidden relative"
       >
         {left}
       </div>
@@ -80,64 +75,22 @@ export function ResizablePane({
       {/* Drag handle */}
       <div
         onMouseDown={handleMouseDown}
-        style={{
-          width: 6,
-          flexShrink: 0,
-          cursor: "col-resize",
-          position: "relative",
-          zIndex: 20,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
+        className="w-[6px] shrink-0 cursor-col-resize relative z-20 flex items-center justify-center group"
       >
-        <div
-          style={{
-            width: 1,
-            height: "100%",
-            background: "#141822",
-            position: "absolute",
-          }}
-        />
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: 3,
-            zIndex: 1,
-          }}
-        >
+        <div className="absolute w-[1px] h-full bg-[#141822] group-hover:bg-[#00f0ff] transition-colors" />
+        <div className="flex flex-col gap-[3px] z-10">
           {[0, 1, 2, 3, 4].map((i) => (
             <div
               key={i}
-              style={{
-                width: 3,
-                height: 3,
-                borderRadius: "50%",
-                background: "#2a2f3e",
-              }}
+              className="w-[3px] h-[3px] rounded-full bg-[#2a2f3e] group-hover:bg-[#00f0ff] transition-colors"
             />
           ))}
         </div>
-        <div
-          style={{
-            position: "absolute",
-            inset: "-0 -4px",
-            cursor: "col-resize",
-          }}
-        />
+        <div className="absolute inset-y-0 -inset-x-1 cursor-col-resize" />
       </div>
 
       {/* Right pane */}
-      <div
-        style={{
-          flex: 1,
-          height: "100%",
-          overflow: "hidden",
-          position: "relative",
-          minWidth: 0,
-        }}
-      >
+      <div className="flex-1 h-full overflow-hidden relative min-w-0">
         {right}
       </div>
     </div>

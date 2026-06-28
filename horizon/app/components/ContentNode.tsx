@@ -18,7 +18,6 @@ import {
   type LegName,
 } from "../hooks/useAgentData";
 
-const MONO = "'JetBrains Mono', 'SF Mono', 'Cascadia Code', monospace";
 const LEG_ORDER: LegName[] = ["funding", "hiring", "tech"];
 
 // Human-readable source for each leg, shown in the lineage drawer.
@@ -62,16 +61,7 @@ export const ContentNode = memo(function ContentNode({ data }: NodeProps) {
 
   return (
     <div
-      style={{
-        width: 270,
-        background: "#0a0c14",
-        border: "1px solid #141822",
-        borderRadius: 3,
-        overflow: "hidden",
-        fontFamily: MONO,
-        cursor: "pointer",
-        transition: "border-color 0.15s ease",
-      }}
+      className="w-[270px] bg-[#0a0c14] border border-[#141822] rounded-[3px] overflow-hidden font-mono cursor-pointer transition-colors duration-150 ease-out"
       onMouseEnter={(e) => {
         (e.currentTarget as HTMLElement).style.borderColor = accent + "60";
       }}
@@ -83,95 +73,43 @@ export const ContentNode = memo(function ContentNode({ data }: NodeProps) {
       <Handle
         type="source"
         position={Position.Right}
-        style={{
-          width: 5,
-          height: 5,
-          background: accent,
-          border: "1px solid #0a0c14",
-          borderRadius: "50%",
-        }}
+        className="!w-[5px] !h-[5px] !border !border-[#0a0c14] !rounded-full"
+        style={{ background: accent }}
       />
       <Handle
         type="target"
         position={Position.Left}
-        style={{
-          width: 5,
-          height: 5,
-          background: "#334",
-          border: "1px solid #0a0c14",
-          borderRadius: "50%",
-        }}
+        className="!w-[5px] !h-[5px] !bg-[#333344] !border !border-[#0a0c14] !rounded-full"
       />
 
       {/* Header: company identity + score */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          padding: 10,
-          borderBottom: "1px solid #141822",
-        }}
-      >
+      <div className="flex items-center gap-2 p-2.5 border-b border-[#141822]">
         <div
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: 3,
-            background: `${accent}15`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
+          className="w-7 h-7 rounded-[3px] flex items-center justify-center shrink-0"
+          style={{ background: `${accent}15` }}
         >
           <Building2 size={14} style={{ color: accent }} />
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              color: "#c8d0e0",
-              lineHeight: "14px",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
+        <div className="flex-1 min-w-0">
+          <div className="text-[11px] font-bold text-[#c8d0e0] leading-[14px] overflow-hidden text-ellipsis whitespace-nowrap">
             {company?.name || company?.domain || "Unknown company"}
           </div>
-          <div
-            style={{
-              fontSize: 8,
-              color: "#556",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
+          <div className="text-[8px] text-[#555566] overflow-hidden text-ellipsis whitespace-nowrap">
             {company?.domain}
             {company?.industry ? ` · ${company.industry}` : ""}
           </div>
         </div>
         {/* Score chip */}
-        <div
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "flex-end",
-            flexShrink: 0,
-          }}
-        >
-          <span style={{ fontSize: 18, fontWeight: 700, color: accent, lineHeight: "18px" }}>
+        <div className="flex flex-col items-end shrink-0">
+          <span className="text-[18px] font-bold leading-[18px]" style={{ color: accent }}>
             {score ? Math.round(scoreVal) : "—"}
           </span>
-          <span style={{ fontSize: 7, color: "#445", letterSpacing: 1 }}>SCORE</span>
+          <span className="text-[7px] text-[#444455] tracking-[1px]">SCORE</span>
         </div>
       </div>
 
       {/* Per-leg badges */}
-      <div style={{ padding: "8px 10px", display: "flex", alignItems: "center", gap: 6 }}>
+      <div className="flex items-center gap-1.5 px-2.5 py-2">
         {LEG_ORDER.map((name) => {
           const fired = !!legs?.[name];
           const c = LEG_COLORS[name];
@@ -179,50 +117,35 @@ export const ContentNode = memo(function ContentNode({ data }: NodeProps) {
             <div
               key={name}
               title={`${name}: ${legSummary(name, legs?.[name] ?? null)}`}
+              className="px-1.5 py-[2px] rounded-[2px] text-[8px] font-bold tracking-[0.5px]"
               style={{
-                padding: "2px 6px",
-                borderRadius: 2,
                 background: fired ? `${c}20` : "#0e1118",
                 border: `1px solid ${fired ? `${c}40` : "#141822"}`,
-                fontSize: 8,
-                fontWeight: 700,
-                letterSpacing: 0.5,
-                color: fired ? c : "#334",
+                color: fired ? c : "#333344",
               }}
             >
               {LEG_BADGES[name]}
             </div>
           );
         })}
-        <span style={{ marginLeft: "auto", fontSize: 8, color: "#445" }}>
+        <span className="ml-auto text-[8px] text-[#444455]">
           {firedLegs.length}/3 legs
         </span>
         {open ? (
-          <ChevronUp size={10} style={{ color: "#445" }} />
+          <ChevronUp size={10} className="text-[#444455]" />
         ) : (
-          <ChevronDown size={10} style={{ color: "#445" }} />
+          <ChevronDown size={10} className="text-[#444455]" />
         )}
       </div>
 
       {/* Lineage drawer (revealed on click) */}
       {open && (
         <div
-          style={{
-            padding: "0 10px 10px",
-            borderTop: "1px solid #141822",
-            paddingTop: 8,
-          }}
+          className="px-2.5 pb-2.5 pt-2 border-t border-[#141822]"
           onClick={(e) => e.stopPropagation()}
         >
           {score?.rationale && (
-            <div
-              style={{
-                fontSize: 8,
-                color: "#889",
-                lineHeight: "13px",
-                marginBottom: 8,
-              }}
-            >
+            <div className="text-[8px] text-[#888899] leading-[13px] mb-2">
               {score.rationale}
             </div>
           )}
@@ -233,30 +156,20 @@ export const ContentNode = memo(function ContentNode({ data }: NodeProps) {
             return (
               <div
                 key={name}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "3px 0",
-                  opacity: leg ? 1 : 0.4,
-                }}
+                className="flex items-center gap-1.5 py-[3px]"
+                style={{ opacity: leg ? 1 : 0.4 }}
               >
                 <div
-                  style={{
-                    width: 4,
-                    height: 4,
-                    borderRadius: "50%",
-                    background: leg ? c : "#334",
-                    flexShrink: 0,
-                  }}
+                  className="w-1 h-1 rounded-full shrink-0"
+                  style={{ background: leg ? c : "#333344" }}
                 />
-                <span style={{ fontSize: 8, color: c, fontWeight: 600, width: 36 }}>
+                <span className="text-[8px] font-semibold w-9" style={{ color: c }}>
                   {LEG_BADGES[name]}
                 </span>
-                <span style={{ fontSize: 8, color: "#667", flex: 1 }}>
+                <span className="text-[8px] text-[#666677] flex-1">
                   {LEG_SOURCE[name]}
                 </span>
-                <span style={{ fontSize: 8, color: "#889" }}>
+                <span className="text-[8px] text-[#888899]">
                   {legSummary(name, leg)}
                   {typeof contribution === "number" ? ` (+${Math.round(contribution)})` : ""}
                 </span>
@@ -264,7 +177,7 @@ export const ContentNode = memo(function ContentNode({ data }: NodeProps) {
             );
           })}
           {typeof company?.icpFit === "number" && (
-            <div style={{ fontSize: 8, color: "#445", marginTop: 6 }}>
+            <div className="text-[8px] text-[#444455] mt-1.5">
               ICP fit: {Math.round(company.icpFit)}
             </div>
           )}

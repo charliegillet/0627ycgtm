@@ -17,9 +17,7 @@ import {
   type LegName,
 } from "../hooks/useAgentData";
 
-const MONO = "'JetBrains Mono', 'SF Mono', 'Cascadia Code', monospace";
 const LEG_ORDER: LegName[] = ["funding", "hiring", "tech"];
-const AMBER = "#f59e0b";
 
 export const AbstainCard = memo(function AbstainCard({ data }: NodeProps) {
   const item = data as unknown as BoardItem;
@@ -32,125 +30,53 @@ export const AbstainCard = memo(function AbstainCard({ data }: NodeProps) {
 
   return (
     <div
+      className="w-[270px] border border-dashed border-amber-500/40 rounded-[3px] overflow-hidden font-mono opacity-[0.92]"
       style={{
-        width: 270,
-        background: "repeating-linear-gradient(135deg, #0a0c14 0px, #0a0c14 8px, #0c0e16 8px, #0c0e16 16px)",
-        border: `1px dashed ${AMBER}40`,
-        borderRadius: 3,
-        overflow: "hidden",
-        fontFamily: MONO,
-        opacity: 0.92,
+        background: "repeating-linear-gradient(135deg, #0a0c14 0px, #0a0c14 8px, #0c0e16 8px, #0c0e16 16px)"
       }}
     >
       <Handle
         type="target"
         position={Position.Left}
-        style={{
-          width: 5,
-          height: 5,
-          background: "#334",
-          border: "1px solid #0a0c14",
-          borderRadius: "50%",
-        }}
+        className="!w-[5px] !h-[5px] !bg-[#333344] !border !border-[#0a0c14] !rounded-full"
       />
 
       {/* Header: identity + ABSTAIN marker */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: 8,
-          padding: 10,
-          borderBottom: `1px dashed ${AMBER}25`,
-        }}
-      >
-        <div
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: 3,
-            background: `${AMBER}12`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            flexShrink: 0,
-          }}
-        >
-          <MinusCircle size={14} style={{ color: AMBER }} />
+      <div className="flex items-center gap-2 p-2.5 border-b border-dashed border-amber-500/25">
+        <div className="w-7 h-7 rounded-[3px] bg-amber-500/10 flex items-center justify-center shrink-0">
+          <MinusCircle size={14} className="text-amber-500" />
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              fontSize: 11,
-              fontWeight: 700,
-              color: "#9aa3b5",
-              lineHeight: "14px",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
+        <div className="flex-1 min-w-0">
+          <div className="text-[11px] font-bold text-[#9aa3b5] leading-[14px] overflow-hidden text-ellipsis whitespace-nowrap">
             {company?.name || company?.domain || "Unknown company"}
           </div>
-          <div
-            style={{
-              fontSize: 8,
-              color: "#556",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
-          >
+          <div className="text-[8px] text-[#555566] overflow-hidden text-ellipsis whitespace-nowrap">
             {company?.domain}
           </div>
         </div>
-        <span
-          style={{
-            padding: "2px 6px",
-            borderRadius: 2,
-            background: `${AMBER}18`,
-            border: `1px solid ${AMBER}40`,
-            fontSize: 7,
-            fontWeight: 700,
-            letterSpacing: 1,
-            color: AMBER,
-            flexShrink: 0,
-          }}
-        >
+        <span className="px-1.5 py-[2px] rounded-[2px] bg-amber-500/10 border border-amber-500/40 text-[7px] font-bold tracking-[1px] text-amber-500 shrink-0">
           ABSTAIN
         </span>
       </div>
 
       {/* Body: which leg fired + not-routing rationale */}
-      <div style={{ padding: 10 }}>
-        <div
-          style={{
-            fontSize: 10,
-            fontWeight: 700,
-            color: AMBER,
-            letterSpacing: 0.5,
-            marginBottom: 6,
-          }}
-        >
+      <div className="p-2.5">
+        <div className="text-[10px] font-bold text-amber-500 tracking-[0.5px] mb-1.5">
           {legsFired}/3 legs — not routing
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+        <div className="flex items-center gap-1.5 mb-2">
           {LEG_ORDER.map((name) => {
             const fired = !!legs?.[name];
             const c = LEG_COLORS[name];
             return (
               <div
                 key={name}
+                className="px-1.5 py-[2px] rounded-[2px] text-[8px] font-bold tracking-[0.5px]"
                 style={{
-                  padding: "2px 6px",
-                  borderRadius: 2,
                   background: fired ? `${c}20` : "#0e1118",
                   border: `1px solid ${fired ? `${c}40` : "#141822"}`,
-                  fontSize: 8,
-                  fontWeight: 700,
-                  letterSpacing: 0.5,
-                  color: fired ? c : "#334",
+                  color: fired ? c : "#333344",
                 }}
               >
                 {LEG_BADGES[name]}
@@ -159,7 +85,7 @@ export const AbstainCard = memo(function AbstainCard({ data }: NodeProps) {
           })}
         </div>
 
-        <div style={{ fontSize: 8, color: "#778", lineHeight: "13px" }}>
+        <div className="text-[8px] text-[#777788] leading-[13px]">
           {score?.rationale ||
             "Insufficient signal to route — needs at least 2 corroborating legs."}
         </div>

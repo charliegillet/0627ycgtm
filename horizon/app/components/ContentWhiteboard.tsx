@@ -118,52 +118,21 @@ export function ContentWhiteboard({ items, isRunning }: ContentWhiteboardProps) 
   );
 
   return (
-    <div style={{ width: "100%", height: "100%", position: "relative" }}>
+    <div className="w-full h-full relative">
       {/* Header bar */}
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 10,
-          padding: "8px 12px",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          background: "linear-gradient(180deg, #020408 0%, transparent 100%)",
-          pointerEvents: "none",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <div className="absolute top-0 left-0 right-0 z-10 px-3 py-2 flex items-center justify-between bg-gradient-to-b from-[#020408] to-transparent pointer-events-none">
+        <div className="flex items-center gap-1.5 font-mono">
           <div
+            className="w-1.5 h-1.5 rounded-full transition-all duration-300"
             style={{
-              width: 6,
-              height: 6,
-              borderRadius: "50%",
-              background: isRunning ? "#00f0ff" : "#334",
+              background: isRunning ? "#00f0ff" : "#333344",
               boxShadow: isRunning ? "0 0 6px #00f0ff" : "none",
             }}
           />
-          <span
-            style={{
-              fontSize: 9,
-              fontWeight: 700,
-              color: "#00f0ff",
-              letterSpacing: 2,
-              textTransform: "uppercase",
-              fontFamily: "'JetBrains Mono', monospace",
-            }}
-          >
+          <span className="text-[9px] font-bold text-[#00f0ff] tracking-[2px] uppercase">
             Lead Board
           </span>
-          <span
-            style={{
-              fontSize: 9,
-              color: "#334",
-              fontFamily: "'JetBrains Mono', monospace",
-            }}
-          >
+          <span className="text-[9px] text-[#333344]">
             {items.length} companies
           </span>
         </div>
@@ -171,47 +140,11 @@ export function ContentWhiteboard({ items, isRunning }: ContentWhiteboardProps) 
 
       {/* Empty state */}
       {items.length === 0 && (
-        <div
-          style={{
-            position: "absolute",
-            inset: 0,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: 8,
-            zIndex: 5,
-            pointerEvents: "none",
-          }}
-        >
-          <div
-            style={{
-              width: 32,
-              height: 32,
-              border: "1px solid #141822",
-              borderRadius: 3,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            <div
-              style={{
-                width: 12,
-                height: 12,
-                border: "1px dashed #2a2f3e",
-                borderRadius: 2,
-              }}
-            />
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 z-5 pointer-events-none font-mono">
+          <div className="w-8 h-8 border border-[#141822] rounded-[3px] flex items-center justify-center">
+            <div className="w-3 h-3 border border-dashed border-[#2a2f3e] rounded-sm" />
           </div>
-          <span
-            style={{
-              fontSize: 10,
-              color: "#334",
-              letterSpacing: 1,
-              fontFamily: "'JetBrains Mono', monospace",
-            }}
-          >
+          <span className="text-[10px] text-[#333344] tracking-[1px]">
             {isRunning
               ? "Detecting signals & scoring companies..."
               : "Describe your ICP or paste a domain to begin"}
@@ -245,11 +178,7 @@ export function ContentWhiteboard({ items, isRunning }: ContentWhiteboardProps) 
         />
         <Controls
           showInteractive={false}
-          style={{
-            background: "#080a10",
-            border: "1px solid #141822",
-            borderRadius: 3,
-          }}
+          className="!bg-[#080a10] !border-[#141822] !rounded-[3px] [&>button]:!border-b-[#141822] [&>button]:!bg-[#080a10] [&>button>svg]:!fill-[#c8d0e0] hover:[&>button]:!bg-[#141822]"
         />
         <MiniMap
           style={minimapStyle}
