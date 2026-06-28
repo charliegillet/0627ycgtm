@@ -1,0 +1,9 @@
+# Python
+__pycache__/
+*.pyc
+
+# Deepgram raw responses (from --raw-json)
+docs/transcripts/*.json
+
+# Local env
+.env
