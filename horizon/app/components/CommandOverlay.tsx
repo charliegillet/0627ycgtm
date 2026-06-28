@@ -15,11 +15,20 @@ import {
   type LogEntry 
 } from "../hooks/useAgentData";
 
+interface PipelineStats {
+  running: number;
+  failed: number;
+  succeeded: number;
+  routed: number;
+  abstained: number;
+}
+
 interface CommandOverlayProps {
   isRunning: boolean;
   isDeploying: boolean;
   logs: LogEntry[];
   activeAgentCount: number;
+  stats?: PipelineStats;
   onCreateMission: (prompt: string) => void;
   onStopAll: () => void;
   onResetAll: () => void;
@@ -30,6 +39,7 @@ export function CommandOverlay({
   isDeploying,
   logs,
   activeAgentCount,
+  stats,
   onCreateMission,
   onStopAll,
   onResetAll,
@@ -116,6 +126,23 @@ export function CommandOverlay({
             >
               <Activity size={10} />
               <span>{activeAgentCount} PIPELINES RUNNING</span>
+            </div>
+          )}
+          {stats && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                fontSize: 10,
+                letterSpacing: 1,
+              }}
+            >
+              <span style={{ color: "#10b981" }}>{stats.routed} ROUTED</span>
+              <span style={{ color: "#f59e0b" }}>{stats.abstained} ABSTAIN</span>
+              {stats.failed > 0 && (
+                <span style={{ color: "#dc2626" }}>{stats.failed} FAILED</span>
+              )}
             </div>
           )}
           <button

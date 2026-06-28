@@ -80,6 +80,8 @@ export default function Home() {
   const allAgents = useQuery(api.agents.getAllAgents) as AgentData[] | undefined;
   const recentLogs = useQuery(api.logs.getRecentLogs, { limit: 50 }) as LogEntry[] | undefined;
   const recentSignals = useQuery(api.signals.getRecentSignals, { limit: 50 });
+  // Reactive pipeline health (observability) for the command overlay.
+  const pipelineStats = useQuery(api.queries.health.pipelineStats);
 
   // ---- Mutations ---------------------------------------------------------
   // detect.recordSignal is internal; the public ingress for a typed ICP / domain
@@ -183,6 +185,7 @@ export default function Home() {
         isDeploying={isDeploying}
         logs={recentLogs || []}
         activeAgentCount={runningCount}
+        stats={pipelineStats}
         onCreateMission={handleCreateMission}
         onStopAll={handleStopAll}
         onResetAll={handleResetAll}
