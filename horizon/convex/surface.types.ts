@@ -6,22 +6,23 @@
 // surface.integration.test.ts: convex-test does NOT enforce api/internal
 // visibility, but the generated `api` type DOES.
 //
-// How it works: `api` is FilterApi<…, "public">, so a function defined with
+// How it works: `api` is FilterApi<..., "public">, so a function defined with
 // internalMutation/internalQuery is NOT a property of `api.<mod>`. Referencing
 // it as `api.<mod>.<fn>` is therefore a real type error (TS2339). We wrap each
 // such reference in `@ts-expect-error`, which consumes that error. If someone
 // reverts a function to a public `mutation`/`query`, the reference type-checks,
 // the directive becomes unused, and tsc raises TS2578 ("Unused '@ts-expect-error'
-// directive") — failing the build. The positive references (no directive)
-// assert the inverse: the kept-public functions MUST stay on `api`, and the
-// locked-down functions MUST exist on `internal`; demoting a kept-public one or
-// removing a locked-down one breaks compilation here too.
+// directive"), failing the build. The positive references (no directive) assert
+// the inverse: the kept-public functions MUST stay on `api`, and the locked-down
+// functions MUST exist on `internal`; demoting a kept-public one or removing a
+// locked-down one breaks compilation here too.
 
 import { api, internal } from "./_generated/api";
 
-// Never called. The body is pure type references; `void` keeps each one a
-// statement so a `@ts-expect-error` maps to exactly one expected error.
-function __surfaceGuard__(): void {
+// Exported so it is unambiguously part of the module, but never called: the
+// body is pure type references with zero runtime side effects, and `void` keeps
+// each one a statement so a `@ts-expect-error` maps to exactly one expected error.
+export function __auditTwoSurfaceGuard(): void {
   // --- Locked down: must NOT be on the public `api` (each line must error). ---
 
   // signals.ts
@@ -72,7 +73,3 @@ function __surfaceGuard__(): void {
   void api.control.sendCommand;
   void api.logs.getRecentLogs;
 }
-
-// Reference the guard so it is not flagged as unused by noUnusedLocals, without
-// ever calling it.
-export const __surfaceGuardRef__ = __surfaceGuard__;
