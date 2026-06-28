@@ -63,50 +63,48 @@ export function CommandOverlay({
   return (
     <>
       {/* Top bar */}
-      <div className="fixed top-0 left-0 right-0 h-12 flex items-center justify-between px-5 bg-gradient-to-b from-[#020408]/95 to-transparent z-50 font-mono">
-        <div className="flex items-center gap-2">
+      <div className="fixed top-0 left-0 right-0 h-14 flex items-center justify-between px-6 bg-black/60 backdrop-blur-lg border-b border-white/5 z-50 font-sans">
+        <div className="flex items-center gap-3">
           <div
-            className="w-1.5 h-1.5 rounded-full transition-all duration-300"
+            className="w-2 h-2 rounded-full transition-all duration-300"
             style={{
-              background: isRunning ? "#00f0ff" : "#333",
-              boxShadow: isRunning ? "0 0 8px #00f0ff" : "none",
+              background: isRunning ? "#10b981" : "#3f3f46",
+              boxShadow: isRunning ? "0 0 8px #10b981" : "none",
             }}
           />
-          <span className="text-[11px] font-bold text-[#00f0ff] tracking-[3px] uppercase">
+          <span className="text-sm font-semibold text-zinc-100 tracking-wide">
             Horizon
           </span>
-          <span className="text-[9px] text-[#333344] ml-2 font-normal">
-            v1.0
+          <span className="text-xs text-zinc-500 font-medium px-2 py-0.5 bg-zinc-900 rounded-md border border-white/5">
+            Beta
           </span>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-5">
           {isRunning && (
-            <div className="flex items-center gap-1.5 text-[10px] text-emerald-500 tracking-widest">
-              <Activity size={10} />
-              <span>{activeAgentCount} PIPELINES RUNNING</span>
+            <div className="flex items-center gap-2 text-xs font-medium text-emerald-400">
+              <Activity size={14} />
+              <span>{activeAgentCount} Active Pipelines</span>
             </div>
           )}
           {stats && (
-            <div className="flex items-center gap-2.5 text-[10px] tracking-widest">
-              <span className="text-emerald-500">{stats.routed} ROUTED</span>
-              <span className="text-amber-500">{stats.abstained} ABSTAIN</span>
+            <div className="flex items-center gap-4 text-xs font-medium">
+              <span className="text-zinc-300">{stats.routed} Routed</span>
+              <span className="text-zinc-500">{stats.abstained} Abstained</span>
               {stats.failed > 0 && (
-                <span className="text-red-600">{stats.failed} FAILED</span>
+                <span className="text-red-400">{stats.failed} Failed</span>
               )}
             </div>
           )}
+          <div className="w-[1px] h-4 bg-zinc-800" />
           <button
             onClick={onResetAll}
-            title="Reset All (Delete Everything)"
-            className="flex items-center gap-1 px-2 py-1 bg-transparent border border-red-600/20 rounded-sm text-red-600 text-[9px] font-semibold cursor-pointer transition-all duration-200 tracking-widest uppercase hover:bg-red-600/10 hover:border-red-600/40"
+            title="Reset All"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-zinc-400 text-xs font-medium hover:text-zinc-100 hover:bg-zinc-800 transition-colors"
           >
-            <RotateCcw size={9} />
+            <RotateCcw size={12} />
             Reset
           </button>
-          <div className="text-[10px] text-[#334455] tracking-widest">
-            {new Date().toLocaleTimeString("en-US", { hour12: false })}
-          </div>
         </div>
       </div>
 
@@ -114,67 +112,71 @@ export function CommandOverlay({
       {logs.length > 0 && (
         <div
           ref={logRef}
-          className="fixed top-14 right-3 w-80 max-h-[calc(100vh-160px)] overflow-y-auto z-40 font-mono bg-[#020408]/85 backdrop-blur-md rounded border border-[#141822] p-3"
+          className="fixed top-20 right-6 w-96 max-h-[calc(100vh-180px)] overflow-y-auto z-40 font-sans bg-zinc-950/80 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl p-4 flex flex-col gap-3"
         >
-          <div className="text-[9px] text-[#444455] tracking-widest uppercase mb-3 flex items-center gap-1">
-            <Radio size={8} />
-            Activity
-            <span className="ml-auto text-[#333344]">
+          <div className="text-xs font-semibold text-zinc-100 flex items-center justify-between pb-2 border-b border-white/5">
+            <div className="flex items-center gap-2">
+              <Radio size={12} className="text-zinc-400" />
+              Activity Log
+            </div>
+            <span className="text-zinc-500 font-normal">
               {logs.length} entries
             </span>
           </div>
-          {logs.slice(0, 30).map((log, i) => {
-            const agent = getAgentById(log.agent_id);
-            return (
-              <div
-                key={log._id || i}
-                className={`text-[9px] leading-4 py-1.5 border-b border-[#0a0e14] ${i === 0 ? 'animate-[fade-in_0.3s_ease]' : ''}`}
-                style={{
-                  opacity: i === 0 ? 1 : Math.max(0.3, 1 - i * 0.05),
-                }}
-              >
-                <div className="flex items-center gap-1.5 mb-[3px]">
-                  <span
-                    className="px-1.5 py-[1px] rounded-[2px] text-[8px] font-semibold tracking-wide"
-                    style={{
-                      background: `${agent.color}15`,
-                      color: agent.color,
-                    }}
-                  >
-                    {agent.name}
-                  </span>
-                  <span className="text-[#333344] text-[8px]">
-                    {new Date(log.timestamp * 1000).toLocaleTimeString()}
-                  </span>
+          <div className="flex flex-col">
+            {logs.slice(0, 30).map((log, i) => {
+              const agent = getAgentById(log.agent_id);
+              return (
+                <div
+                  key={log._id || i}
+                  className={`py-3 border-b border-white/5 last:border-0 ${i === 0 ? 'animate-[fade-in_0.3s_ease]' : ''}`}
+                  style={{
+                    opacity: i === 0 ? 1 : Math.max(0.4, 1 - i * 0.05),
+                  }}
+                >
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span
+                      className="px-2 py-0.5 rounded-md text-[10px] font-semibold tracking-wide"
+                      style={{
+                        background: `${agent.color}15`,
+                        color: agent.color,
+                        border: `1px solid ${agent.color}30`
+                      }}
+                    >
+                      {agent.name}
+                    </span>
+                    <span className="text-zinc-500 text-xs font-mono">
+                      {new Date(log.timestamp * 1000).toLocaleTimeString()}
+                    </span>
+                  </div>
+                  <div className="flex items-start gap-2.5">
+                    <span className="text-sm mt-0.5">{getLogIcon(log.type)}</span>
+                    <span className="text-sm text-zinc-300 leading-relaxed flex-1">{log.message}</span>
+                  </div>
                 </div>
-                <div className="flex items-start gap-1.5">
-                  <span className="text-[11px]">{getLogIcon(log.type)}</span>
-                  <span className="text-[#888899] flex-1">{log.message}</span>
-                </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       )}
 
       {/* Bottom command input */}
-      <div className="fixed bottom-0 left-0 right-0 px-5 pt-4 pb-5 bg-gradient-to-t from-[#020408]/98 via-[#020408]/80 to-transparent z-50 font-mono">
-        <div className="max-w-[680px] mx-auto flex flex-col gap-2.5">
+      <div className="fixed bottom-0 left-0 right-0 px-6 pt-8 pb-8 bg-gradient-to-t from-black via-black/80 to-transparent z-50 font-sans">
+        <div className="max-w-[720px] mx-auto flex flex-col gap-3">
           <form
             onSubmit={handleSubmit}
-            className="flex gap-2 items-center"
+            className="flex gap-3 items-center bg-zinc-900/60 backdrop-blur-md p-1.5 rounded-xl border border-white/10 shadow-2xl focus-within:border-zinc-700 transition-colors"
           >
-            <div className="flex-1 flex items-center gap-2 px-3 py-2.5 bg-[#080a10] border border-[#141822] rounded-sm">
-              <Search size={14} className="text-[#333344] shrink-0" />
+            <div className="flex-1 flex items-center gap-3 px-3">
+              <Search size={18} className="text-zinc-500 shrink-0" />
               <input
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Describe your ICP or paste a domain..."
                 disabled={isDeploying}
-                className="flex-1 bg-transparent border-none outline-none text-[12px] tracking-[0.3px]"
+                className="flex-1 bg-transparent border-none outline-none text-sm text-zinc-100 placeholder:text-zinc-500 h-10"
                 style={{
-                  color: isDeploying ? "#555566" : "#c8d0e0",
                   cursor: isDeploying ? "not-allowed" : "text",
                 }}
               />
@@ -183,13 +185,13 @@ export function CommandOverlay({
             <button
               type="submit"
               disabled={!query.trim() || isDeploying}
-              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-sm text-[11px] font-semibold tracking-widest uppercase transition-all duration-200 ${
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-semibold transition-all duration-200 ${
                 query.trim() && !isDeploying
-                  ? 'bg-gradient-to-br from-[#00c8ff] to-[#0088cc] border border-[#00d4ff]/40 text-[#020408] cursor-pointer'
-                  : 'bg-[#0a0e14] border border-[#141822] text-[#333344] cursor-default'
+                  ? 'bg-white text-black hover:bg-zinc-200 shadow-md cursor-pointer'
+                  : 'bg-zinc-800/50 text-zinc-500 cursor-default'
               }`}
             >
-              <Zap size={12} />
+              <Zap size={14} className={query.trim() && !isDeploying ? "text-black" : "text-zinc-500"} />
               {isDeploying ? "Detecting..." : (isRunning ? "New Search" : "Detect")}
             </button>
 
@@ -197,16 +199,16 @@ export function CommandOverlay({
               <button
                 type="button"
                 onClick={onStopAll}
-                className="flex items-center gap-1.5 px-4 py-2.5 bg-transparent border border-red-600/40 rounded-sm text-red-600 text-[11px] font-semibold cursor-pointer transition-all duration-200 tracking-widest uppercase hover:bg-red-600/10"
+                className="flex items-center gap-2 px-5 py-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg text-red-400 text-sm font-semibold cursor-pointer transition-all duration-200"
               >
-                <StopCircle size={12} />
-                Stop All
+                <StopCircle size={14} />
+                Stop
               </button>
             )}
           </form>
 
           {!isRunning && (
-            <div className="text-center text-[9px] text-[#222233] tracking-widest">
+            <div className="text-center text-xs text-zinc-500 font-medium tracking-wide">
               Try: &quot;Series A fintech in the US, 50-200 employees&quot; or paste a domain like &quot;stripe.com&quot;
             </div>
           )}

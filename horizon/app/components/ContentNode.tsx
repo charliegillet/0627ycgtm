@@ -61,55 +61,49 @@ export const ContentNode = memo(function ContentNode({ data }: NodeProps) {
 
   return (
     <div
-      className="w-[270px] bg-[#0a0c14] border border-[#141822] rounded-[3px] overflow-hidden font-mono cursor-pointer transition-colors duration-150 ease-out"
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.borderColor = accent + "60";
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLElement).style.borderColor = "#141822";
-      }}
+      className="w-[320px] bg-zinc-950/90 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden font-sans cursor-pointer shadow-xl transition-all duration-200 ease-out hover:border-zinc-700 hover:shadow-2xl"
       onClick={() => setOpen((v) => !v)}
     >
       <Handle
         type="source"
         position={Position.Right}
-        className="!w-[5px] !h-[5px] !border !border-[#0a0c14] !rounded-full"
+        className="!w-[6px] !h-[6px] !border-2 !border-zinc-950 !rounded-full transition-colors"
         style={{ background: accent }}
       />
       <Handle
         type="target"
         position={Position.Left}
-        className="!w-[5px] !h-[5px] !bg-[#333344] !border !border-[#0a0c14] !rounded-full"
+        className="!w-[6px] !h-[6px] !bg-zinc-600 !border-2 !border-zinc-950 !rounded-full"
       />
 
       {/* Header: company identity + score */}
-      <div className="flex items-center gap-2 p-2.5 border-b border-[#141822]">
+      <div className="flex items-center gap-3 p-4 border-b border-white/5">
         <div
-          className="w-7 h-7 rounded-[3px] flex items-center justify-center shrink-0"
+          className="w-10 h-10 rounded-lg flex items-center justify-center shrink-0"
           style={{ background: `${accent}15` }}
         >
-          <Building2 size={14} style={{ color: accent }} />
+          <Building2 size={18} style={{ color: accent }} />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-[11px] font-bold text-[#c8d0e0] leading-[14px] overflow-hidden text-ellipsis whitespace-nowrap">
+          <div className="text-sm font-semibold text-zinc-100 leading-tight overflow-hidden text-ellipsis whitespace-nowrap">
             {company?.name || company?.domain || "Unknown company"}
           </div>
-          <div className="text-[8px] text-[#555566] overflow-hidden text-ellipsis whitespace-nowrap">
+          <div className="text-xs text-zinc-400 mt-0.5 overflow-hidden text-ellipsis whitespace-nowrap font-medium">
             {company?.domain}
             {company?.industry ? ` · ${company.industry}` : ""}
           </div>
         </div>
         {/* Score chip */}
-        <div className="flex flex-col items-end shrink-0">
-          <span className="text-[18px] font-bold leading-[18px]" style={{ color: accent }}>
+        <div className="flex flex-col items-end shrink-0 pl-2">
+          <span className="text-2xl font-bold leading-none tracking-tight" style={{ color: accent }}>
             {score ? Math.round(scoreVal) : "—"}
           </span>
-          <span className="text-[7px] text-[#444455] tracking-[1px]">SCORE</span>
+          <span className="text-[9px] text-zinc-500 font-semibold tracking-wider mt-1 uppercase">SCORE</span>
         </div>
       </div>
 
       {/* Per-leg badges */}
-      <div className="flex items-center gap-1.5 px-2.5 py-2">
+      <div className="flex items-center gap-2 px-4 py-3 bg-zinc-900/30">
         {LEG_ORDER.map((name) => {
           const fired = !!legs?.[name];
           const c = LEG_COLORS[name];
@@ -117,68 +111,70 @@ export const ContentNode = memo(function ContentNode({ data }: NodeProps) {
             <div
               key={name}
               title={`${name}: ${legSummary(name, legs?.[name] ?? null)}`}
-              className="px-1.5 py-[2px] rounded-[2px] text-[8px] font-bold tracking-[0.5px]"
+              className="px-2 py-1 rounded-md text-[10px] font-semibold tracking-wide"
               style={{
-                background: fired ? `${c}20` : "#0e1118",
-                border: `1px solid ${fired ? `${c}40` : "#141822"}`,
-                color: fired ? c : "#333344",
+                background: fired ? `${c}15` : "transparent",
+                border: `1px solid ${fired ? `${c}30` : "rgba(255,255,255,0.05)"}`,
+                color: fired ? c : "#71717a",
               }}
             >
               {LEG_BADGES[name]}
             </div>
           );
         })}
-        <span className="ml-auto text-[8px] text-[#444455]">
+        <span className="ml-auto text-[10px] font-medium text-zinc-500 bg-zinc-800/50 px-2 py-1 rounded-md">
           {firedLegs.length}/3 legs
         </span>
         {open ? (
-          <ChevronUp size={10} className="text-[#444455]" />
+          <ChevronUp size={14} className="text-zinc-500 ml-1" />
         ) : (
-          <ChevronDown size={10} className="text-[#444455]" />
+          <ChevronDown size={14} className="text-zinc-500 ml-1" />
         )}
       </div>
 
       {/* Lineage drawer (revealed on click) */}
       {open && (
         <div
-          className="px-2.5 pb-2.5 pt-2 border-t border-[#141822]"
+          className="px-4 pb-4 pt-3 border-t border-white/5 bg-zinc-900/20"
           onClick={(e) => e.stopPropagation()}
         >
           {score?.rationale && (
-            <div className="text-[8px] text-[#888899] leading-[13px] mb-2">
+            <div className="text-xs text-zinc-400 leading-relaxed mb-3">
               {score.rationale}
             </div>
           )}
-          {LEG_ORDER.map((name) => {
-            const leg = legs?.[name] ?? null;
-            const c = LEG_COLORS[name];
-            const contribution = score?.rubric?.perLeg?.[name];
-            return (
-              <div
-                key={name}
-                className="flex items-center gap-1.5 py-[3px]"
-                style={{ opacity: leg ? 1 : 0.4 }}
-              >
+          <div className="flex flex-col gap-2">
+            {LEG_ORDER.map((name) => {
+              const leg = legs?.[name] ?? null;
+              const c = LEG_COLORS[name];
+              const contribution = score?.rubric?.perLeg?.[name];
+              return (
                 <div
-                  className="w-1 h-1 rounded-full shrink-0"
-                  style={{ background: leg ? c : "#333344" }}
-                />
-                <span className="text-[8px] font-semibold w-9" style={{ color: c }}>
-                  {LEG_BADGES[name]}
-                </span>
-                <span className="text-[8px] text-[#666677] flex-1">
-                  {LEG_SOURCE[name]}
-                </span>
-                <span className="text-[8px] text-[#888899]">
-                  {legSummary(name, leg)}
-                  {typeof contribution === "number" ? ` (+${Math.round(contribution)})` : ""}
-                </span>
-              </div>
-            );
-          })}
+                  key={name}
+                  className="flex items-center gap-2.5"
+                  style={{ opacity: leg ? 1 : 0.5 }}
+                >
+                  <div
+                    className="w-1.5 h-1.5 rounded-full shrink-0"
+                    style={{ background: leg ? c : "#3f3f46" }}
+                  />
+                  <span className="text-[10px] font-bold w-10 uppercase tracking-wide" style={{ color: c }}>
+                    {LEG_BADGES[name]}
+                  </span>
+                  <span className="text-[10px] font-medium text-zinc-500 flex-1 truncate">
+                    {LEG_SOURCE[name]}
+                  </span>
+                  <span className="text-[10px] font-medium text-zinc-400 whitespace-nowrap">
+                    {legSummary(name, leg)}
+                    {typeof contribution === "number" ? ` (+${Math.round(contribution)})` : ""}
+                  </span>
+                </div>
+              );
+            })}
+          </div>
           {typeof company?.icpFit === "number" && (
-            <div className="text-[8px] text-[#444455] mt-1.5">
-              ICP fit: {Math.round(company.icpFit)}
+            <div className="text-[10px] font-medium text-zinc-500 mt-3 pt-3 border-t border-white/5">
+              ICP Fit: <span className="text-zinc-300">{Math.round(company.icpFit)}</span>
             </div>
           )}
         </div>

@@ -80,7 +80,7 @@ export function AgentPlane({
         distanceFactor={3}
         className="pointer-events-none"
       >
-        <div className="w-[640px] h-[400px] bg-[#0a0b0f] rounded overflow-hidden relative">
+        <div className="w-[640px] h-[400px] bg-zinc-950 rounded-xl overflow-hidden relative shadow-2xl border border-white/5">
           {liveUrl ? (
             <iframe
               src={liveUrl}
@@ -90,18 +90,18 @@ export function AgentPlane({
             />
           ) : (
             <div
-              className="w-full h-full flex flex-col items-center justify-center font-mono gap-2"
+              className="w-full h-full flex flex-col items-center justify-center font-sans gap-3"
               style={{ color: agentColor }}
             >
               <div
-                className="w-8 h-8 rounded-full border-2 animate-[spin_1s_linear_infinite]"
+                className="w-10 h-10 rounded-full border-2 animate-[spin_1s_linear_infinite]"
                 style={{
-                  borderColor: `${agentColor}40`,
+                  borderColor: `${agentColor}30`,
                   borderTopColor: agentColor,
                 }}
               />
-              <span className="text-[10px] opacity-70">
-                {agentRole} source · standby
+              <span className="text-sm font-medium tracking-wide">
+                {agentRole} <span className="opacity-50">· Standby</span>
               </span>
             </div>
           )}
@@ -123,7 +123,7 @@ export function AgentPlane({
         distanceFactor={6}
         className="pointer-events-none"
       >
-        <div className="font-mono text-center whitespace-nowrap">
+        <div className="font-sans text-center whitespace-nowrap bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 shadow-xl">
           <div
             className="text-[10px] uppercase tracking-[2px] flex items-center justify-center gap-1.5"
             style={{
@@ -145,8 +145,8 @@ export function AgentPlane({
 
           {!isActive && (
             <div
-              className="mt-[3px] text-[7px] tracking-[1.5px] uppercase font-medium"
-              style={{ color: `${agentColor}70` }}
+              className="mt-[3px] text-[8px] tracking-[1.5px] uppercase font-medium"
+              style={{ color: `${agentColor}80` }}
             >
               {agentRole}
             </div>
@@ -155,7 +155,7 @@ export function AgentPlane({
           {isActive && (
             <div className="mt-[3px] flex items-center justify-center gap-1.5">
               <span
-                className="text-[7px] tracking-[1.5px] uppercase font-medium"
+                className="text-[8px] tracking-[1.5px] uppercase font-medium"
                 style={{ color: `${agentColor}90` }}
               >
                 {agentRole} · {status}

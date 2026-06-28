@@ -20,10 +20,10 @@ const HorizonScene = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="absolute inset-0 bg-[#020408] flex items-center justify-center font-mono">
+      <div className="absolute inset-0 bg-black flex items-center justify-center font-sans">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-6 h-6 rounded-full border-2 border-[#141822] border-t-[#00f0ff] animate-[spin_0.8s_linear_infinite]" />
-          <span className="text-[10px] text-[#333344] tracking-[3px] uppercase">
+          <div className="w-6 h-6 rounded-full border-2 border-zinc-800 border-t-white animate-[spin_0.8s_linear_infinite]" />
+          <span className="text-xs text-zinc-400 tracking-widest uppercase font-medium">
             Initializing Command Center
           </span>
         </div>
@@ -123,7 +123,7 @@ export default function Home() {
   }, [resetAll]);
 
   return (
-    <div className="fixed inset-0 overflow-hidden bg-[#020408]">
+    <div className="fixed inset-0 overflow-hidden bg-black text-zinc-100 font-sans">
       <ResizablePane
         defaultWidth={520}
         minWidth={320}
