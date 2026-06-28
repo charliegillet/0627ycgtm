@@ -66,6 +66,7 @@ export function SignalParticles({ signals }: { signals: AgentSignal[] }) {
       
       const toAgent = AGENTS[toIdx];
       
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentionally spawn a particle in response to a new signal row
       setParticles((prev) => [
         ...prev,
         {
@@ -85,6 +86,7 @@ export function SignalParticles({ signals }: { signals: AgentSignal[] }) {
       
       const fromAgent = AGENTS[fromIdx];
       
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentionally spawn a particle in response to a new signal row
       setParticles((prev) => [
         ...prev,
         {
@@ -130,6 +132,7 @@ function Particle({ data }: { data: ActiveParticle }) {
       );
       ref.current.position.copy(pos);
     }
+    // eslint-disable-next-line react-hooks/immutability -- R3F per-frame mutation; progress is read by the cleanup filter
     data.progress = progress.current;
   });
 

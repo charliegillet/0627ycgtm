@@ -1,9 +1,14 @@
 import { defineConfig } from "vitest/config";
 
-// The lib tests are pure Node (no Convex/edge runtime needed).
+// Pure lib tests run in the default node env. The convex-test integration
+// test opts into the edge-runtime VM via a `// @vitest-environment edge-runtime`
+// docblock at the top of that file (vitest v4 removed environmentMatchGlobs).
 export default defineConfig({
   test: {
-    environment: "node",
-    include: ["convex/lib/**/*.test.ts"],
+    include: [
+      "convex/lib/**/*.test.ts",
+      "convex/**/*.integration.test.ts",
+    ],
+    server: { deps: { inline: ["convex-test"] } },
   },
 });
