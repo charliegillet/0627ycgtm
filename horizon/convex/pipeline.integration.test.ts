@@ -72,4 +72,55 @@ describe("BEACHHEAD pipeline (integration, fixture mode)", () => {
     expect(first.deduped).toBe(false);
     expect(second.deduped).toBe(true);
   });
+
+  it("upsertCompany marks ONLY the triggering signal (run-scoped idempotency)", async () => {
+    const t = convexTest(schema, modules);
+    const now = Date.now();
+    // Two pending signals for the same domain (different kinds).
+    const a = await t.run((ctx) =>
+      ctx.db.insert("signalEvents", {
+        source: "x", kind: "funding", companyDomain: "acme.com",
+        payload: {}, processed: false, detectedAt: now,
+      })
+    );
+    const b = await t.run((ctx) =>
+      ctx.db.insert("signalEvents", {
+        source: "x", kind: "hiring", companyDomain: "acme.com",
+        payload: {}, processed: false, detectedAt: now,
+      })
+    );
+    const runId = await t.run((ctx) =>
+      ctx.db.insert("runs", { stage: "detect", status: "running", startedAt: now })
+    );
+
+    await t.mutation(internal.detect.upsertCompany, {
+      domain: "acme.com", runId,
+      legs: { funding: null, hiring: null, tech: null },
+      signalEventId: a,
+    });
+
+    const sa = await t.run((ctx) => ctx.db.get(a));
+    const sb = await t.run((ctx) => ctx.db.get(b));
+    expect(sa!.processed).toBe(true);
+    expect(sb!.processed).toBe(false); // not wrongly marked by a sibling run
+  });
+
+  it("act approval gate: routed account proposes a pending action that approve advances", async () => {
+    vi.useFakeTimers();
+    const t = convexTest(schema, modules);
+    await t.mutation(internal.detect.recordSignal, {
+      source: "test", kind: "manual", companyDomain: "stripe.com",
+    });
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
+    vi.useRealTimers();
+
+    const action = await t.run((ctx) => ctx.db.query("actions").first());
+    expect(action).toBeDefined();
+    expect(action!.status).toBe("pending"); // nothing auto-sent
+
+    await t.mutation(api.act.approve, { actionId: action!._id });
+    await t.finishInProgressScheduledFunctions();
+    const after = await t.run((ctx) => ctx.db.get(action!._id));
+    expect(["approved", "sent"]).toContain(after!.status);
+  });
 });

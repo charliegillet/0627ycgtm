@@ -92,6 +92,7 @@ export const recordSignal = internalMutation({
     await ctx.scheduler.runAfter(0, internal.detect.runPipeline, {
       companyDomain: args.companyDomain,
       runId,
+      signalEventId,
     });
 
     return { deduped: false, signalEventId, runId };
@@ -126,6 +127,7 @@ export const runPipeline = internalAction({
   args: {
     companyDomain: v.string(),
     runId: v.id("runs"),
+    signalEventId: v.optional(v.id("signalEvents")),
   },
   // Explicit return type breaks the circular type inference caused by this
   // action referencing other functions in its own module (internal.detect.*).
@@ -172,6 +174,7 @@ export const runPipeline = internalAction({
       domain: args.companyDomain,
       runId: args.runId,
       legs: { funding, hiring, tech },
+      signalEventId: args.signalEventId,
     });
 
     await ctx.runMutation(internal.detect.trace, {
@@ -225,6 +228,7 @@ export const upsertCompany = internalMutation({
     domain: v.string(),
     runId: v.id("runs"),
     legs: v.any(),
+    signalEventId: v.optional(v.id("signalEvents")),
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db
@@ -267,14 +271,13 @@ export const upsertCompany = internalMutation({
       });
     }
 
-    // Mark this domain's pending signals as processed + attach companyId.
-    const pending = await ctx.db
-      .query("signalEvents")
-      .withIndex("by_processed", (q) => q.eq("processed", false))
-      .collect();
-    for (const sig of pending) {
-      if (sig.companyDomain === args.domain) {
-        await ctx.db.patch(sig._id, { processed: true, companyId });
+    // Mark ONLY the signal that triggered this run as processed (run-scoped,
+    // exact idempotency). A global domain scan would wrongly mark sibling
+    // signals from concurrent runs before their own pipeline enriches them.
+    if (args.signalEventId) {
+      const sig = await ctx.db.get(args.signalEventId);
+      if (sig && !sig.processed) {
+        await ctx.db.patch(args.signalEventId, { processed: true, companyId });
       }
     }
 
