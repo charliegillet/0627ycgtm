@@ -16,6 +16,7 @@ import type * as crons from "../crons.js";
 import type * as detect from "../detect.js";
 import type * as discoveries from "../discoveries.js";
 import type * as http from "../http.js";
+import type * as icp from "../icp.js";
 import type * as lib_convergence from "../lib/convergence.js";
 import type * as lib_idempotency from "../lib/idempotency.js";
 import type * as logs from "../logs.js";
@@ -33,6 +34,7 @@ import type * as providers_trace from "../providers/trace.js";
 import type * as queries_board from "../queries/board.js";
 import type * as queries_health from "../queries/health.js";
 import type * as queries_lineage from "../queries/lineage.js";
+import type * as rateLimit from "../rateLimit.js";
 import type * as score from "../score.js";
 import type * as signals from "../signals.js";
 
@@ -51,6 +53,7 @@ declare const fullApi: ApiFromModules<{
   detect: typeof detect;
   discoveries: typeof discoveries;
   http: typeof http;
+  icp: typeof icp;
   "lib/convergence": typeof lib_convergence;
   "lib/idempotency": typeof lib_idempotency;
   logs: typeof logs;
@@ -68,6 +71,7 @@ declare const fullApi: ApiFromModules<{
   "queries/board": typeof queries_board;
   "queries/health": typeof queries_health;
   "queries/lineage": typeof queries_lineage;
+  rateLimit: typeof rateLimit;
   score: typeof score;
   signals: typeof signals;
 }>;

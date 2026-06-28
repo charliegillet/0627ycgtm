@@ -1,10 +1,18 @@
-import { mutation, query } from "./_generated/server";
+import { internalMutation, query } from "./_generated/server";
 import { v } from "convex/values";
+
+// Audit #2 (surface reduction): only getRecentSignals is client-called
+// (app/page.tsx). createSignal / broadcastSignal / cleanupOldSignals had no
+// app/ or internal.* / api.* caller in convex/ (the BEACHHEAD pipeline writes
+// via internal.mutations.bridge.bridgeSignal, not these) and were reachable
+// only by the legacy Python orchestrator, which Batch C (PR #6) has since
+// removed (resolving finding #13), so they are now fully callerless. They are
+// demoted to internalMutation so they are no longer part of the public API.
 
 /**
  * Create a signal (orb) from agent to center or center to agent
  */
-export const createSignal = mutation({
+export const createSignal = internalMutation({
   args: {
     fromAgent: v.number(),
     toAgent: v.number(),
@@ -27,7 +35,7 @@ export const createSignal = mutation({
  * Create a broadcast signal - from center to all agents
  * Used when a discovery is made and needs to be shared
  */
-export const broadcastSignal = mutation({
+export const broadcastSignal = internalMutation({
   args: {
     fromAgent: v.number(),
     message: v.string(),
@@ -74,7 +82,7 @@ export const getRecentSignals = query({
 /**
  * Clear old signals (cleanup - keep only last 5 minutes)
  */
-export const cleanupOldSignals = mutation({
+export const cleanupOldSignals = internalMutation({
   handler: async (ctx) => {
     const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
     const oldSignals = await ctx.db

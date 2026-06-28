@@ -193,4 +193,13 @@ export default defineSchema({
     response: v.any(),
     fetchedAt: v.number(),
   }).index("by_key", ["provider", "op", "key"]),
+
+  // Fixed-window rate-limit counters (see convex/rateLimit.ts). One row per key
+  // (e.g. a normalized companyDomain); the row tracks the current window's start
+  // and call count.
+  rateLimits: defineTable({
+    key: v.string(),
+    count: v.number(),
+    windowStart: v.number(),
+  }).index("by_key", ["key"]),
 });

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { parseSignalBody, toWireBody } from "../../../convex/lib/intake";
 
 /**
  * Ingress proxy: the client POSTs typed ICP / domain here; we forward to the
@@ -32,11 +33,22 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "Invalid JSON" }, { status: 400 });
   }
 
+  // Validate + normalize up front (audit #4): reject type-invalid bodies here
+  // instead of round-tripping them to Convex only to get a 500. parseSignalBody
+  // is pure (no Convex server imports) so it bundles cleanly into this route.
+  const parsed = parseSignalBody(body);
+  if (!parsed.ok) {
+    return NextResponse.json({ ok: false, error: parsed.error }, { status: 400 });
+  }
+
   try {
+    // Forward the canonical wire body: domain mode echoes the normalized fields,
+    // icp mode rebuilds { payload:{ icp }, limit }. The internal `mode`
+    // discriminant is stripped, so http.ts re-parses to the identical shape.
     const res = await fetch(`${site}/signal`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
+      body: JSON.stringify(toWireBody(parsed.value)),
     });
     const data = await res.json().catch(() => ({}));
     return NextResponse.json(data, { status: res.status });

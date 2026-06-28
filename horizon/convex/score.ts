@@ -31,12 +31,23 @@ export const scoreCompany = internalAction({
     const legs: Legs = normalizeLegs(data.legs);
     const decision = decide(legs);
 
-    // Optional rationale enrichment via OpenAI. Only attempted when a key is
-    // present AND the `ai` package resolves; otherwise we keep decide()'s text.
-    let rationale = decision.rationale;
+    // Deterministic rationale from the convergence rule. (Was `let` to allow an
+    // OpenAI override; the live override is removed, so it is `const` now.)
+    const rationale = decision.rationale;
+    // Live LLM rationale is a future enhancement. Wiring it requires: `npm i ai`,
+    // OPENAI_API_KEY on the Convex deployment, and moving this enrich into a `"use node"`
+    // action (a "use node" file may export ONLY actions, so a colocated query/mutation must
+    // move out, the same rule that governed the orangeSlice fix). Until then we trace the gap
+    // rather than silently swallow it (the old code dynamically imported a missing `ai`
+    // package inside a catch that returned null, hiding any real failure).
     if (process.env.OPENAI_API_KEY) {
-      const enriched = await tryEnrichRationale(decision, data.name, legs);
-      if (enriched) rationale = enriched;
+      await ctx.runMutation(internal.detect.trace, {
+        runId: args.runId,
+        stage: "score",
+        level: "warn",
+        message:
+          "score: OPENAI_API_KEY is set but live LLM rationale is not wired; using deterministic rationale.",
+      });
     }
 
     await ctx.runMutation(internal.score.recordScore, {
@@ -192,37 +203,4 @@ function coerceLeg(value: unknown): Legs["funding"] {
     return null;
   }
   return leg;
-}
-
-/**
- * tryEnrichRationale — optional OpenAI pass. Imported dynamically so a missing
- * `ai` package never breaks the build; in fixture mode (no key) this is never
- * reached. Returns null on any failure so the caller falls back to decide().
- */
-async function tryEnrichRationale(
-  decision: ReturnType<typeof decide>,
-  companyName: string,
-  legs: Legs
-): Promise<string | null> {
-  try {
-    // Imported via a computed specifier so the build does not require the `ai`
-    // package to be installed in fixture mode. This branch only runs when
-    // OPENAI_API_KEY is set, at which point `ai` is expected to be present.
-    const aiPkg = "ai";
-    const aiMod: {
-      generateObject: (opts: unknown) => Promise<{ object: { rationale: string } }>;
-    } = await import(/* @vite-ignore */ aiPkg);
-    const { openai } = await import("@ai-sdk/openai");
-    const { z } = await import("zod");
-    const result = await aiMod.generateObject({
-      model: openai("gpt-4o-mini"),
-      schema: z.object({ rationale: z.string() }),
-      prompt: `A GTM lead-scoring engine evaluated ${companyName}. Score ${decision.score}/100, confidence ${decision.confidence}, legs fired ${decision.rubric.legsFired}/3 (funding/hiring/tech signals: ${JSON.stringify(
-        legs
-      )}). Base rationale: "${decision.rationale}". Rewrite the rationale in one or two crisp sentences for a sales rep, preserving the leg count and whether we are routing or abstaining.`,
-    });
-    return result.object.rationale;
-  } catch {
-    return null;
-  }
 }
