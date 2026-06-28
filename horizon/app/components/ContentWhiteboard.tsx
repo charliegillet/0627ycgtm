@@ -21,6 +21,7 @@ import {
   type NodeTypes,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
+import { Terminal } from "lucide-react";
 
 import { ContentNode } from "./ContentNode";
 import { AbstainCard } from "./AbstainCard";
@@ -31,13 +32,13 @@ const nodeTypes: NodeTypes = {
   abstain: AbstainCard,
 };
 
-const NODE_W = 300;
+const NODE_W = 310;
 const NODE_H = 260;
-const GAP_X = 40;
-const GAP_Y = 40;
-const COLS = 3;
-const ORIGIN_X = 80;
-const ORIGIN_Y = 80;
+const GAP_X = 50;
+const GAP_Y = 50;
+const COLS = 2; // Form factor is split 50/50, so 2 columns are perfect for high readability!
+const ORIGIN_X = 60;
+const ORIGIN_Y = 100;
 
 interface ContentWhiteboardProps {
   items: BoardItem[];
@@ -104,51 +105,60 @@ export function ContentWhiteboard({ items, isRunning }: ContentWhiteboardProps) 
 
   const rfStyle = useMemo(
     () => ({
-      background: "#000000",
+      background: "#020204",
     }),
     []
   );
 
   const minimapStyle = useMemo(
     () => ({
-      backgroundColor: "#09090b",
-      maskColor: "rgba(0, 0, 0, 0.7)",
+      backgroundColor: "rgba(4, 4, 8, 0.85)",
+      borderColor: "rgba(255, 255, 255, 0.08)",
     }),
     []
   );
 
   return (
     <div className="w-full h-full relative">
-      {/* Header bar */}
-      <div className="absolute top-0 left-0 right-0 z-10 px-4 py-3 flex items-center justify-between bg-gradient-to-b from-black to-transparent pointer-events-none">
-        <div className="flex items-center gap-2 font-sans">
+      {/* HUD Header bar */}
+      <div className="absolute top-0 left-0 right-0 z-10 px-6 py-4 flex items-center justify-between bg-gradient-to-b from-[#020204]/90 via-[#020204]/40 to-transparent pointer-events-none">
+        <div className="flex items-center gap-3 py-1.5 px-3 rounded-full bg-zinc-950/80 border border-white/5 shadow-xl backdrop-blur-md">
           <div
-            className="w-2 h-2 rounded-full transition-all duration-300"
-            style={{
-              background: isRunning ? "#10b981" : "#3f3f46",
-              boxShadow: isRunning ? "0 0 8px #10b981" : "none",
-            }}
+            className={`w-2.5 h-2.5 rounded-full transition-all duration-500 ${
+              isRunning ? "bg-[#10b981] animate-pulse shadow-[0_0_10px_#10b981]" : "bg-zinc-700"
+            }`}
           />
-          <span className="text-xs font-semibold text-zinc-100 tracking-wide uppercase">
-            Lead Board
-          </span>
-          <span className="text-xs text-zinc-500 ml-1">
-            {items.length} companies
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-zinc-100 tracking-widest uppercase font-display">
+              ACTIVE INTELLIGENCE RECORD
+            </span>
+            <div className="w-[1px] h-3 bg-white/10" />
+            <span className="text-xs font-bold text-zinc-400 font-display">
+              {items.length} COMPANIES TRACKED
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Empty state */}
+      {/* Empty state styled like a secure terminal diagnostic */}
       {items.length === 0 && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 z-5 pointer-events-none font-sans">
-          <div className="w-12 h-12 border border-zinc-800 rounded-xl flex items-center justify-center bg-zinc-950/50 shadow-sm">
-            <div className="w-4 h-4 border border-dashed border-zinc-600 rounded-sm" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 z-5 pointer-events-none font-sans">
+          <div className="w-14 h-14 border border-white/10 rounded-2xl flex items-center justify-center bg-zinc-950/40 shadow-2xl relative">
+            <div className="absolute inset-0.5 rounded-xl border border-dashed border-white/5 animate-[pulse-opacity_2s_infinite]" />
+            <Terminal size={22} className="text-zinc-500 animate-[pulse-opacity_1.5s_infinite]" />
           </div>
-          <span className="text-sm font-medium text-zinc-400">
-            {isRunning
-              ? "Detecting signals & scoring companies..."
-              : "Describe your ICP or paste a domain to begin"}
-          </span>
+          <div className="flex flex-col items-center gap-1.5">
+            <span className="text-[13px] font-bold text-zinc-300 font-display tracking-widest uppercase">
+              {isRunning
+                ? "DECRYPTING PARALLEL SIGNALS & SCORING..."
+                : "WAR ROOM INACTIVE"}
+            </span>
+            <p className="text-[11px] text-zinc-500 font-medium text-center max-w-[280px] leading-normal font-sans">
+              {isRunning
+                ? "Ingesting data streams. Real-time convergence assessment is currently underway."
+                : "Describe your ideal customer profile or insert a specific domain above to initiate active tracking."}
+            </p>
+          </div>
         </div>
       )}
 
@@ -172,24 +182,24 @@ export function ContentWhiteboard({ items, isRunning }: ContentWhiteboardProps) 
       >
         <Background
           variant={BackgroundVariant.Dots}
-          gap={24}
+          gap={32}
           size={1}
-          color="#27272a"
+          color="rgba(255, 255, 255, 0.03)"
         />
         <Controls
           showInteractive={false}
-          className="!bg-zinc-950 !border-zinc-800 !rounded-lg [&>button]:!border-b-zinc-800 [&>button]:!bg-zinc-950 [&>button>svg]:!fill-zinc-400 hover:[&>button]:!bg-zinc-900 overflow-hidden shadow-md"
+          className="!bg-zinc-950/95 !border-white/10 !rounded-xl overflow-hidden shadow-2xl backdrop-blur-md"
         />
         <MiniMap
           style={minimapStyle}
           nodeColor={(n) => {
-            if (n.type === "abstain") return "#f59e0b";
+            if (n.type === "abstain") return "rgba(245, 158, 11, 0.8)";
             const score = (n.data as { score?: { score?: number } })?.score?.score;
             if (typeof score === "number") {
-              if (score >= 70) return "#10b981";
-              if (score >= 50) return "#f59e0b";
+              if (score >= 70) return "rgba(16, 185, 129, 0.8)";
+              if (score >= 50) return "rgba(245, 158, 11, 0.8)";
             }
-            return "#445";
+            return "#3f3f46";
           }}
           pannable
           zoomable
