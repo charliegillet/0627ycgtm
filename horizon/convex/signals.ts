@@ -5,7 +5,8 @@ import { v } from "convex/values";
 // (app/page.tsx). createSignal / broadcastSignal / cleanupOldSignals had no
 // app/ or internal.* / api.* caller in convex/ (the BEACHHEAD pipeline writes
 // via internal.mutations.bridge.bridgeSignal, not these) and were reachable
-// only by the stale, unused legacy Python (finding #13, left alone). They are
+// only by the legacy Python orchestrator, which Batch C (PR #6) has since
+// removed (resolving finding #13), so they are now fully callerless. They are
 // demoted to internalMutation so they are no longer part of the public API.
 
 /**

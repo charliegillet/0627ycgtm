@@ -4,9 +4,9 @@ import { v } from "convex/values";
 // Audit #2 (surface reduction): only getRecentLogs is client-called
 // (app/page.tsx). addLog / clearLogs / getLogsByAgent had no app/ or
 // internal.* / api.* caller in convex/ (the BEACHHEAD pipeline writes via
-// internal.mutations.bridge, not addLog) and were reachable only by the stale,
-// unused legacy Python (finding #13, left alone). They are demoted to internal
-// so they are no longer part of the public API.
+// internal.mutations.bridge, not addLog) and were reachable only by the legacy
+// Python orchestrator, which Batch C (PR #6) has since removed (resolving
+// finding #13). They are demoted to internal so they are no longer public.
 
 /**
  * Add a log entry for an agent

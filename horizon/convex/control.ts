@@ -4,9 +4,9 @@ import { v } from "convex/values";
 // Audit #2 (surface reduction): only sendCommand is client-called (the app's
 // "stop_all" button in app/page.tsx). getPendingCommands and the four status
 // mutations had no app/ or internal.* / api.* caller in convex/ and were
-// reachable only by the stale, unused legacy Python (finding #13, left alone),
-// so they are demoted to internal. sendCommand stays public because the app
-// genuinely calls it.
+// reachable only by the legacy Python orchestrator, which Batch C (PR #6) has
+// since removed (resolving finding #13), so they are demoted to internal.
+// sendCommand stays public because the app genuinely calls it.
 
 /**
  * Send a control command (like stop_all)
