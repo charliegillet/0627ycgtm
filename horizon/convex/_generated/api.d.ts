@@ -21,6 +21,7 @@ import type * as lib_idempotency from "../lib/idempotency.js";
 import type * as logs from "../logs.js";
 import type * as missions from "../missions.js";
 import type * as mutations_bridge from "../mutations/bridge.js";
+import type * as pipeline from "../pipeline.js";
 import type * as providers_cache from "../providers/cache.js";
 import type * as providers_fiber from "../providers/fiber.js";
 import type * as providers_fixtures from "../providers/fixtures.js";
@@ -51,6 +52,7 @@ declare const fullApi: ApiFromModules<{
   logs: typeof logs;
   missions: typeof missions;
   "mutations/bridge": typeof mutations_bridge;
+  pipeline: typeof pipeline;
   "providers/cache": typeof providers_cache;
   "providers/fiber": typeof providers_fiber;
   "providers/fixtures": typeof providers_fixtures;
@@ -88,4 +90,6 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  workflow: import("@convex-dev/workflow/_generated/component.js").ComponentApi<"workflow">;
+};

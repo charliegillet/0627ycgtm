@@ -89,6 +89,10 @@ export const recordSignal = internalMutation({
       signalType: "detect",
     });
 
+    // Default path: one-shot scheduled pipeline (fully tested via convex-test).
+    // A durable equivalent is defined in pipeline.ts (gtmPipeline) and deploys,
+    // but the convex-test harness cannot drive the workflow component yet, so
+    // switching the live path onto it is deferred to a focused session.
     await ctx.scheduler.runAfter(0, internal.detect.runPipeline, {
       companyDomain: args.companyDomain,
       runId,
