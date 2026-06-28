@@ -127,7 +127,9 @@ export const runPipeline = internalAction({
     companyDomain: v.string(),
     runId: v.id("runs"),
   },
-  handler: async (ctx, args) => {
+  // Explicit return type breaks the circular type inference caused by this
+  // action referencing other functions in its own module (internal.detect.*).
+  handler: async (ctx, args): Promise<{ companyId: Id<"companies"> }> => {
     const start = Date.now();
     await ctx.runMutation(internal.detect.trace, {
       runId: args.runId,
