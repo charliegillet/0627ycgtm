@@ -15,6 +15,15 @@ import { withCache } from "./cache";
 const PROVIDER = "fiber";
 const BASE_URL = "https://api.fiber.ai/v1";
 
+// True for any value carrying the synthetic marker (a labeled fixture).
+function isSynthetic(value: unknown): boolean {
+  return Boolean(
+    value &&
+      typeof value === "object" &&
+      (value as Record<string, unknown>).__synthetic,
+  );
+}
+
 // Synthetic fixtures, keyed by op. Every payload is tagged __synthetic: true.
 function fixtureReveal(ref: string) {
   return {
@@ -80,6 +89,11 @@ export const callFiber = internalAction({
         }
         return fixtureLiveLinkedin(ref);
       },
+      // Same cache-poisoning guard as the convergence legs: never persist a
+      // synthetic value. `reveal` (intentionally always synthetic) is therefore
+      // re-derived per call rather than cached, and a degraded liveLinkedin
+      // re-attempts the live call next time instead of replaying a fixture.
+      (value) => !isSynthetic(value),
     );
   },
 });
