@@ -105,6 +105,45 @@ describe("BEACHHEAD pipeline (integration, fixture mode)", () => {
     expect(sb!.processed).toBe(false); // not wrongly marked by a sibling run
   });
 
+  it("never caches a synthetic fixture, and never labels a fixture as (live)", async () => {
+    // Cache-poisoning guard (must-fix #1/#2). In fixture mode every leg returns a
+    // labeled __synthetic fixture. Those must NOT be written to apiCache (a cached
+    // synthetic would later be served as a clean cache HIT and mislabeled live),
+    // and no trace may ever read "(live)" while carrying __synthetic.
+    vi.useFakeTimers();
+    const t = convexTest(schema, modules);
+    await t.mutation(internal.detect.recordSignal, {
+      source: "test",
+      kind: "manual",
+      companyDomain: "stripe.com",
+    });
+    await t.finishAllScheduledFunctions(vi.runAllTimers);
+    vi.useRealTimers();
+
+    // No apiCache row may hold a synthetic payload.
+    const cacheRows = await t.run((ctx) => ctx.db.query("apiCache").collect());
+    const poisoned = cacheRows.filter(
+      (r) =>
+        r.response &&
+        typeof r.response === "object" &&
+        (r.response as Record<string, unknown>).__synthetic,
+    );
+    expect(poisoned).toHaveLength(0);
+
+    // No trace may claim (live) while its message contains __synthetic.
+    const traceRows = await t.run((ctx) => ctx.db.query("traces").collect());
+    const mislabeled = traceRows.filter(
+      (tr) => tr.message.includes("(live)") && tr.message.includes("__synthetic"),
+    );
+    expect(mislabeled).toHaveLength(0);
+
+    // Fixture legs are honestly labeled "(fixture)" (no key in the test env).
+    const fixtureLegTraces = traceRows.filter((tr) =>
+      tr.message.includes("leg for stripe.com (fixture)"),
+    );
+    expect(fixtureLegTraces.length).toBeGreaterThan(0);
+  });
+
   it("act approval gate: routed account proposes a pending action that approve advances", async () => {
     vi.useFakeTimers();
     const t = convexTest(schema, modules);

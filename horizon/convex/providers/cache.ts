@@ -94,16 +94,38 @@ export async function cachePut(
 
 // Cache-first wrapper: returns the cached response when present, otherwise runs
 // `fetcher`, caches its result, and returns it.
+//
+// `shouldCache` gates the write so callers can refuse to persist results that
+// must never be replayed (e.g. a synthetic fixture written on a live failure:
+// caching it would let a later cache HIT short-circuit the try/catch and
+// resurface the fixture mislabeled as a clean "live" success). Default: cache
+// everything (back-compat for callers that only ever return live data).
 export async function withCache<T>(
   ctx: ActionCtx,
   ref: CacheRef,
   fetcher: () => Promise<T>,
+  shouldCache: (value: T) => boolean = () => true,
 ): Promise<T> {
+  return (await withCacheStatus(ctx, ref, fetcher, shouldCache)).value;
+}
+
+// Like `withCache` but also reports whether the value came from the cache. The
+// caller needs this so it can label a trace honestly: a value SERVED from cache
+// never ran the fetcher's try/catch, so its mode/level must be derived from the
+// value itself (and the hit flag), not from optimistic defaults.
+export async function withCacheStatus<T>(
+  ctx: ActionCtx,
+  ref: CacheRef,
+  fetcher: () => Promise<T>,
+  shouldCache: (value: T) => boolean = () => true,
+): Promise<{ value: T; cacheHit: boolean }> {
   const cached = await cacheGet(ctx, ref.provider, ref.op, ref.key);
   if (cached !== null && cached !== undefined) {
-    return cached as T;
+    return { value: cached as T, cacheHit: true };
   }
   const fresh = await fetcher();
-  await cachePut(ctx, ref.provider, ref.op, ref.key, fresh);
-  return fresh;
+  if (shouldCache(fresh)) {
+    await cachePut(ctx, ref.provider, ref.op, ref.key, fresh);
+  }
+  return { value: fresh, cacheHit: false };
 }
