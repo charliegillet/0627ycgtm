@@ -127,7 +127,7 @@ export function AgentPlane({
                 }}
               />
               <span style={{ fontSize: 10, opacity: 0.7 }}>
-                Waiting for stream...
+                {agentRole} source · standby
               </span>
             </div>
           )}
@@ -185,6 +185,21 @@ export function AgentPlane({
             )}
           </div>
 
+          {!isActive && (
+            <div
+              style={{
+                marginTop: 3,
+                fontSize: 7,
+                color: `${agentColor}70`,
+                letterSpacing: 1.5,
+                textTransform: "uppercase",
+                fontWeight: 500,
+              }}
+            >
+              {agentRole}
+            </div>
+          )}
+
           {isActive && (
             <div
               style={{
@@ -204,7 +219,7 @@ export function AgentPlane({
                   fontWeight: 500,
                 }}
               >
-                {status}
+                {agentRole} · {status}
               </span>
               <div
                 style={{

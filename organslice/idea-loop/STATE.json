@@ -1,0 +1,30 @@
+{
+  "status": "READY_FOR_HUMAN_DECISION",
+  "round": 2,
+  "iterations_used": 4,
+  "sources_opened": 28,
+  "candidates": ["C07", "C08", "C09", "C10", "C11", "C12"],
+  "finalists": ["C12 (Finalist A, 94)", "C07 (Finalist B, 85)"],
+  "eliminated": [
+    "R1: C01-C06 (C02/C03 human-rejected: commodity + small demo)",
+    "C11 pricing-page (78: half-commodity UI + flywheel corpus)",
+    "C08 stakeholder-coach (66: thin vs Salesloft, fatal)",
+    "C10 autopsy (62: pattern-library flywheel, fatal)",
+    "C09 cloned-mentorship (59: commodity clone + seeded corpus, fatal)"
+  ],
+  "open_questions": [
+    "Team size and skill coverage UNKNOWN (matters most for C12's 24h pipeline build)",
+    "Sponsor API credits/eligibility UNKNOWN (TrueFoundry + Moss for C12)",
+    "Judging rubric weights UNKNOWN"
+  ],
+  "recurring_failures": {
+    "commodity": 1,
+    "moat-is-undemonstrable-flywheel": "Round-2 pattern: bold ideas' moats need data the team won't have at day-one; resolved by C12 (builds its own traces) and C07 (pre-parses its set)"
+  },
+  "score_history": [
+    {"round": 1, "C01": 71, "C02": 89, "C03": 84, "C04": 77, "C05": 79, "C06": 72, "best": 89, "outcome": "human REJECT BOTH (commodity + small swing)"},
+    {"round": 2, "C07": 85, "C08": 66, "C09": 59, "C10": 62, "C11": 78, "C12": 94, "best": 94, "improvement_vs_r1": "+5, and addresses both human constraints"}
+  ],
+  "stages_done": ["R1: full + human REJECT", "R2: 3-gen(10) -> gate(6) -> sharpen -> debate -> blind-score -> 2 finalists -> feasibility-spikes(doc)"],
+  "next_action": "STOP at human gate. Awaiting choice: SELECT A (C12, recommended, high-risk) | SELECT B (C07, safe) | MERGE (rules not met) | REJECT BOTH (record missing requirement -> Round 3; note: 1 round used, recurring-failure watch active)."
+}

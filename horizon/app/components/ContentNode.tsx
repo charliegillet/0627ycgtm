@@ -1,66 +1,64 @@
 "use client";
 
 /**
- * ContentNode — Custom React Flow node for a discovered content item.
- * Shows the thumbnail, video URL, and which agent found it.
+ * ContentNode (LeadNode) — Custom React Flow node for a scored company.
+ * Shows the company name, score, ICP fit and per-leg signal badges
+ * (funding / hiring / tech). Clicking the card reveals lineage: the
+ * per-leg source + the leg's contribution to the score.
  */
 
-import { memo } from "react";
+import { memo, useState } from "react";
 import { Handle, Position, type NodeProps } from "@xyflow/react";
+import { Building2, ChevronDown, ChevronUp } from "lucide-react";
 import {
-  ExternalLink,
-  Eye,
-  Play,
-  MessageSquare,
-  Heart,
-} from "lucide-react";
-import { getAgentById, PLATFORM_COLORS } from "../hooks/useAgentData";
+  LEG_COLORS,
+  LEG_BADGES,
+  type BoardItem,
+  type Leg,
+  type LegName,
+} from "../hooks/useAgentData";
 
 const MONO = "'JetBrains Mono', 'SF Mono', 'Cascadia Code', monospace";
+const LEG_ORDER: LegName[] = ["funding", "hiring", "tech"];
 
-function getPlatformFromUrl(url: string): string {
-  if (url.includes("tiktok")) return "tiktok";
-  if (url.includes("youtube") || url.includes("youtu.be")) return "youtube";
-  if (url.includes("twitter") || url.includes("x.com")) return "twitter";
-  if (url.includes("instagram")) return "instagram";
-  if (url.includes("linkedin")) return "linkedin";
-  return "blog";
-}
-
-const PLATFORM_ICONS: Record<string, string> = {
-  youtube: "YT",
-  tiktok: "TK",
-  twitter: "X",
-  linkedin: "LI",
-  instagram: "IG",
-  blog: "BG",
-  duckduckgo: "DDG",
+// Human-readable source for each leg, shown in the lineage drawer.
+const LEG_SOURCE: Record<LegName, string> = {
+  funding: "OrangeSlice · Crunchbase",
+  hiring: "OrangeSlice · Jobs",
+  tech: "OrangeSlice · BuiltWith",
 };
 
-function timeAgo(ts: number): string {
-  const diff = Math.floor((Date.now() - ts * 1000) / 1000);
-  if (diff < 5) return "just now";
-  if (diff < 60) return `${diff}s ago`;
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
-  return `${Math.floor(diff / 3600)}h ago`;
+function legSummary(name: LegName, leg: Leg | null): string {
+  if (!leg) return "no signal";
+  if (name === "funding") {
+    return typeof leg.ageDays === "number"
+      ? `raise ${leg.ageDays}d ago`
+      : "funding signal";
+  }
+  if (name === "hiring") {
+    return typeof leg.count === "number"
+      ? `${leg.count} open roles`
+      : "hiring signal";
+  }
+  return leg.present ? "stack match" : "no stack match";
+}
+
+function scoreColor(score: number): string {
+  if (score >= 70) return "#10b981";
+  if (score >= 50) return "#f59e0b";
+  return "#667";
 }
 
 export const ContentNode = memo(function ContentNode({ data }: NodeProps) {
-  const {
-    video_url,
-    thumbnail,
-    found_by_agent_id,
-    keywords,
-    _creationTime,
-    likes,
-    views,
-    comments,
-  } = data as Record<string, unknown>;
+  const item = data as unknown as BoardItem;
+  const company = item.company;
+  const score = item.score;
+  const legs = score?.legs ?? null;
+  const [open, setOpen] = useState(false);
 
-  const agent = getAgentById(found_by_agent_id as number);
-  const platform = getPlatformFromUrl(video_url as string || "");
-  const platformColor = PLATFORM_COLORS[platform] || "#666";
-  const isVideo = platform === "youtube" || platform === "tiktok" || platform === "instagram";
+  const scoreVal = score?.score ?? 0;
+  const firedLegs = LEG_ORDER.filter((n) => legs?.[n]);
+  const accent = score ? scoreColor(scoreVal) : "#334";
 
   return (
     <div
@@ -71,15 +69,16 @@ export const ContentNode = memo(function ContentNode({ data }: NodeProps) {
         borderRadius: 3,
         overflow: "hidden",
         fontFamily: MONO,
-        cursor: "grab",
+        cursor: "pointer",
         transition: "border-color 0.15s ease",
       }}
       onMouseEnter={(e) => {
-        (e.currentTarget as HTMLElement).style.borderColor = platformColor + "60";
+        (e.currentTarget as HTMLElement).style.borderColor = accent + "60";
       }}
       onMouseLeave={(e) => {
         (e.currentTarget as HTMLElement).style.borderColor = "#141822";
       }}
+      onClick={() => setOpen((v) => !v)}
     >
       <Handle
         type="source"
@@ -87,7 +86,7 @@ export const ContentNode = memo(function ContentNode({ data }: NodeProps) {
         style={{
           width: 5,
           height: 5,
-          background: agent?.color || "#334",
+          background: accent,
           border: "1px solid #0a0c14",
           borderRadius: "50%",
         }}
@@ -104,237 +103,173 @@ export const ContentNode = memo(function ContentNode({ data }: NodeProps) {
         }}
       />
 
-      {/* Thumbnail / Media preview */}
+      {/* Header: company identity + score */}
       <div
         style={{
-          width: "100%",
-          height: 120,
-          position: "relative",
-          overflow: "hidden",
-          background: "#080a10",
+          display: "flex",
+          alignItems: "center",
+          gap: 8,
+          padding: 10,
           borderBottom: "1px solid #141822",
         }}
       >
-        {thumbnail ? (
-          <img
-            src={thumbnail as string}
-            alt="Content thumbnail"
-            style={{
-              width: "100%",
-              height: "100%",
-              objectFit: "cover",
-              display: "block",
-              opacity: 0.85,
-            }}
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-          />
-        ) : (
-          <div
-            style={{
-              width: "100%",
-              height: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: `${platformColor}08`,
-            }}
-          >
-            <Eye size={20} style={{ color: "#2a2f3e" }} />
-          </div>
-        )}
-
-        {/* Platform badge */}
         <div
           style={{
-            position: "absolute",
-            top: 6,
-            left: 6,
-            padding: "2px 6px",
-            borderRadius: 2,
-            background: `${platformColor}20`,
-            border: `1px solid ${platformColor}30`,
-            fontSize: 8,
-            fontWeight: 700,
-            color: platformColor,
-            letterSpacing: 1,
+            width: 28,
+            height: 28,
+            borderRadius: 3,
+            background: `${accent}15`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            flexShrink: 0,
           }}
         >
-          {PLATFORM_ICONS[platform] || platform.toUpperCase()}
+          <Building2 size={14} style={{ color: accent }} />
         </div>
-
-        {/* Video play overlay */}
-        {isVideo && (
+        <div style={{ flex: 1, minWidth: 0 }}>
           <div
             style={{
-              position: "absolute",
-              inset: 0,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              background: "rgba(0,0,0,0.2)",
-              opacity: 0,
-              transition: "opacity 0.15s ease",
-              cursor: "pointer",
+              fontSize: 11,
+              fontWeight: 700,
+              color: "#c8d0e0",
+              lineHeight: "14px",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
             }}
-            onMouseEnter={(e) => {
-              (e.currentTarget as HTMLElement).style.opacity = "1";
-            }}
-            onMouseLeave={(e) => {
-              (e.currentTarget as HTMLElement).style.opacity = "0";
-            }}
-            onClick={() => window.open(video_url as string, '_blank')}
           >
+            {company?.name || company?.domain || "Unknown company"}
+          </div>
+          <div
+            style={{
+              fontSize: 8,
+              color: "#556",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {company?.domain}
+            {company?.industry ? ` · ${company.industry}` : ""}
+          </div>
+        </div>
+        {/* Score chip */}
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "flex-end",
+            flexShrink: 0,
+          }}
+        >
+          <span style={{ fontSize: 18, fontWeight: 700, color: accent, lineHeight: "18px" }}>
+            {score ? Math.round(scoreVal) : "—"}
+          </span>
+          <span style={{ fontSize: 7, color: "#445", letterSpacing: 1 }}>SCORE</span>
+        </div>
+      </div>
+
+      {/* Per-leg badges */}
+      <div style={{ padding: "8px 10px", display: "flex", alignItems: "center", gap: 6 }}>
+        {LEG_ORDER.map((name) => {
+          const fired = !!legs?.[name];
+          const c = LEG_COLORS[name];
+          return (
             <div
+              key={name}
+              title={`${name}: ${legSummary(name, legs?.[name] ?? null)}`}
               style={{
-                width: 28,
-                height: 28,
-                borderRadius: "50%",
-                background: "rgba(0,0,0,0.6)",
-                border: "1px solid rgba(255,255,255,0.15)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
+                padding: "2px 6px",
+                borderRadius: 2,
+                background: fired ? `${c}20` : "#0e1118",
+                border: `1px solid ${fired ? `${c}40` : "#141822"}`,
+                fontSize: 8,
+                fontWeight: 700,
+                letterSpacing: 0.5,
+                color: fired ? c : "#334",
               }}
             >
-              <Play size={12} fill="white" style={{ color: "white", marginLeft: 1 }} />
+              {LEG_BADGES[name]}
             </div>
-          </div>
+          );
+        })}
+        <span style={{ marginLeft: "auto", fontSize: 8, color: "#445" }}>
+          {firedLegs.length}/3 legs
+        </span>
+        {open ? (
+          <ChevronUp size={10} style={{ color: "#445" }} />
+        ) : (
+          <ChevronDown size={10} style={{ color: "#445" }} />
         )}
       </div>
 
-      {/* Content info */}
-      <div style={{ padding: 10 }}>
-        {/* Keywords */}
-        {typeof keywords === 'string' && keywords.length > 0 && (
-          <div
-            style={{
-              fontSize: 9,
-              color: "#c8d0e0",
-              marginBottom: 6,
-              lineHeight: "14px",
-              display: "-webkit-box",
-              WebkitLineClamp: 2,
-              WebkitBoxOrient: "vertical",
-              overflow: "hidden",
-            }}
-          >
-            {keywords}
-          </div>
-        )}
-
-        {/* URL */}
-        <a
-          href={video_url as string}
-          target="_blank"
-          rel="noopener noreferrer"
+      {/* Lineage drawer (revealed on click) */}
+      {open && (
+        <div
           style={{
-            fontSize: 8,
-            color: platformColor,
-            textDecoration: "none",
-            display: "flex",
-            alignItems: "center",
-            gap: 4,
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
-            marginBottom: 8,
+            padding: "0 10px 10px",
+            borderTop: "1px solid #141822",
+            paddingTop: 8,
           }}
           onClick={(e) => e.stopPropagation()}
         >
-          <ExternalLink size={8} />
-          <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>
-            {(video_url as string)?.replace(/^https?:\/\//, '').slice(0, 35)}...
-          </span>
-        </a>
-
-        {/* Engagement metrics */}
-        {(typeof likes === 'number' || typeof views === 'number' || typeof comments === 'number') && (
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 8,
-              marginBottom: 8,
-              paddingBottom: 8,
-              borderBottom: "1px solid #141822",
-            }}
-          >
-            {typeof views === 'number' && (
-              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                <Eye size={9} style={{ color: "#667" }} />
-                <span style={{ fontSize: 8, color: "#889", fontWeight: 600 }}>
-                  {views >= 1000000 ? `${(views / 1000000).toFixed(1)}M` :
-                   views >= 1000 ? `${(views / 1000).toFixed(1)}K` :
-                   views.toLocaleString()}
-                </span>
-              </div>
-            )}
-            {typeof likes === 'number' && (
-              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                <Heart size={9} style={{ color: "#f55", fill: "#f55" }} />
-                <span style={{ fontSize: 8, color: "#889", fontWeight: 600 }}>
-                  {likes >= 1000000 ? `${(likes / 1000000).toFixed(1)}M` :
-                   likes >= 1000 ? `${(likes / 1000).toFixed(1)}K` :
-                   likes.toLocaleString()}
-                </span>
-              </div>
-            )}
-            {typeof comments === 'number' && (
-              <div style={{ display: "flex", alignItems: "center", gap: 3 }}>
-                <MessageSquare size={9} style={{ color: "#667" }} />
-                <span style={{ fontSize: 8, color: "#889", fontWeight: 600 }}>
-                  {comments >= 1000000 ? `${(comments / 1000000).toFixed(1)}M` :
-                   comments >= 1000 ? `${(comments / 1000).toFixed(1)}K` :
-                   comments.toLocaleString()}
-                </span>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Footer */}
-        <div
-          style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <div
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 4,
-            }}
-          >
+          {score?.rationale && (
             <div
               style={{
-                width: 4,
-                height: 4,
-                borderRadius: "50%",
-                background: agent?.color || "#666",
-              }}
-            />
-            <span
-              style={{
                 fontSize: 8,
-                color: agent?.color || "#666",
-                fontWeight: 600,
-                letterSpacing: 0.5,
+                color: "#889",
+                lineHeight: "13px",
+                marginBottom: 8,
               }}
             >
-              {agent?.name || `Agent ${found_by_agent_id}`}
-            </span>
-          </div>
-          {typeof _creationTime === 'number' && (
-            <span style={{ fontSize: 7, color: "#445" }}>
-              {timeAgo(_creationTime / 1000)}
-            </span>
+              {score.rationale}
+            </div>
+          )}
+          {LEG_ORDER.map((name) => {
+            const leg = legs?.[name] ?? null;
+            const c = LEG_COLORS[name];
+            const contribution = score?.rubric?.perLeg?.[name];
+            return (
+              <div
+                key={name}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  padding: "3px 0",
+                  opacity: leg ? 1 : 0.4,
+                }}
+              >
+                <div
+                  style={{
+                    width: 4,
+                    height: 4,
+                    borderRadius: "50%",
+                    background: leg ? c : "#334",
+                    flexShrink: 0,
+                  }}
+                />
+                <span style={{ fontSize: 8, color: c, fontWeight: 600, width: 36 }}>
+                  {LEG_BADGES[name]}
+                </span>
+                <span style={{ fontSize: 8, color: "#667", flex: 1 }}>
+                  {LEG_SOURCE[name]}
+                </span>
+                <span style={{ fontSize: 8, color: "#889" }}>
+                  {legSummary(name, leg)}
+                  {typeof contribution === "number" ? ` (+${Math.round(contribution)})` : ""}
+                </span>
+              </div>
+            );
+          })}
+          {typeof company?.icpFit === "number" && (
+            <div style={{ fontSize: 8, color: "#445", marginTop: 6 }}>
+              ICP fit: {Math.round(company.icpFit)}
+            </div>
           )}
         </div>
-      </div>
+      )}
     </div>
   );
 });

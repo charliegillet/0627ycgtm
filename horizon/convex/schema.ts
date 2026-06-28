@@ -85,4 +85,112 @@ export default defineSchema({
     signalType: v.string(),     // Type of signal (log, discovery, etc)
     timestamp: v.number(),      // Unix timestamp
   }).index("by_timestamp", ["timestamp"]),
+
+  // ---------------------------------------------------------------------------
+  // BEACHHEAD GTM tables (all NEW fields use v.optional where the contract allows)
+  // ---------------------------------------------------------------------------
+
+  companies: defineTable({
+    domain: v.string(),
+    name: v.string(),
+    industry: v.optional(v.string()),
+    employeeCount: v.optional(v.number()),
+    enrichment: v.optional(v.any()),
+    icpFit: v.optional(v.number()),
+  }).index("by_domain", ["domain"]),
+
+  leads: defineTable({
+    companyId: v.id("companies"),
+    fullName: v.string(),
+    title: v.optional(v.string()),
+    email: v.optional(v.string()),
+    linkedin: v.optional(v.string()),
+    score: v.optional(v.number()),
+    stage: v.union(
+      v.literal("detected"),
+      v.literal("enriching"),
+      v.literal("scored"),
+      v.literal("acting"),
+      v.literal("done"),
+      v.literal("dead")
+    ),
+  })
+    .index("by_company", ["companyId"])
+    .index("by_stage", ["stage"]),
+
+  signalEvents: defineTable({
+    source: v.string(),
+    kind: v.string(),
+    companyDomain: v.optional(v.string()),
+    companyId: v.optional(v.id("companies")),
+    payload: v.any(),
+    strength: v.optional(v.number()),
+    processed: v.boolean(),
+    detectedAt: v.number(),
+  })
+    .index("by_processed", ["processed", "detectedAt"])
+    .index("by_dedupe", ["source", "companyDomain", "kind"]),
+
+  scores: defineTable({
+    leadId: v.optional(v.id("leads")),
+    companyId: v.id("companies"),
+    score: v.number(),
+    rubric: v.any(),
+    rationale: v.string(),
+    confidence: v.number(),
+    abstained: v.boolean(),
+    legs: v.any(),
+    createdAt: v.number(),
+  }).index("by_company", ["companyId"]),
+
+  actions: defineTable({
+    leadId: v.optional(v.id("leads")),
+    companyId: v.id("companies"),
+    type: v.union(
+      v.literal("slack"),
+      v.literal("crm"),
+      v.literal("email_draft")
+    ),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("approved"),
+      v.literal("blocked"),
+      v.literal("sent"),
+      v.literal("failed")
+    ),
+    body: v.optional(v.string()),
+    createdAt: v.number(),
+  })
+    .index("by_status", ["status"])
+    .index("by_company", ["companyId"]),
+
+  runs: defineTable({
+    companyId: v.optional(v.id("companies")),
+    stage: v.string(),
+    status: v.union(
+      v.literal("running"),
+      v.literal("succeeded"),
+      v.literal("failed")
+    ),
+    startedAt: v.number(),
+    finishedAt: v.optional(v.number()),
+  }).index("by_status", ["status"]),
+
+  traces: defineTable({
+    runId: v.id("runs"),
+    stage: v.string(),
+    agentId: v.optional(v.number()),
+    level: v.union(v.literal("info"), v.literal("warn"), v.literal("error")),
+    message: v.string(),
+    durationMs: v.optional(v.number()),
+    at: v.number(),
+  }).index("by_run", ["runId"]),
+
+  apiCache: defineTable({
+    provider: v.string(),
+    op: v.string(),
+    key: v.string(),
+    response: v.any(),
+    fetchedAt: v.number(),
+  }).index("by_key", ["provider", "op", "key"]),
 });

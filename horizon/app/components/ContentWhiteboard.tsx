@@ -1,8 +1,10 @@
 "use client";
 
 /**
- * ContentWhiteboard — A React Flow canvas that shows discovered content.
- * Each piece of scraped content appears as a draggable node.
+ * ContentWhiteboard — React Flow canvas (the HERO) showing the live lead board.
+ * Each scored company appears as a draggable card; companies the scorer
+ * abstained on render as a visually distinct AbstainCard. Cards are laid out in
+ * a FIFO grid with a minimap; clicking a routed card reveals its lineage.
  */
 
 import { useEffect, useMemo, useRef } from "react";
@@ -21,16 +23,16 @@ import {
 import "@xyflow/react/dist/style.css";
 
 import { ContentNode } from "./ContentNode";
-import { AgentClusterNode } from "./AgentClusterNode";
-import { getAgentById, type DiscoveredContent } from "../hooks/useAgentData";
+import { AbstainCard } from "./AbstainCard";
+import { type BoardItem } from "../hooks/useAgentData";
 
 const nodeTypes: NodeTypes = {
   content: ContentNode,
-  agentCluster: AgentClusterNode,
+  abstain: AbstainCard,
 };
 
 const NODE_W = 280;
-const NODE_H = 220;
+const NODE_H = 240;
 const GAP_X = 40;
 const GAP_Y = 40;
 const COLS = 3;
@@ -38,11 +40,11 @@ const ORIGIN_X = 80;
 const ORIGIN_Y = 80;
 
 interface ContentWhiteboardProps {
-  content: DiscoveredContent[];
+  items: BoardItem[];
   isRunning: boolean;
 }
 
-export function ContentWhiteboard({ content, isRunning }: ContentWhiteboardProps) {
+export function ContentWhiteboard({ items, isRunning }: ContentWhiteboardProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const knownIds = useRef<Set<string>>(new Set());
@@ -51,7 +53,7 @@ export function ContentWhiteboard({ content, isRunning }: ContentWhiteboardProps
   const MAX_DISPLAY_NODES = 100;
 
   useEffect(() => {
-    if (content.length === 0) {
+    if (items.length === 0) {
       knownIds.current.clear();
       knownIdsOrder.current = [];
       setNodes([]);
@@ -59,16 +61,15 @@ export function ContentWhiteboard({ content, isRunning }: ContentWhiteboardProps
       return;
     }
 
-    const newItems = content.filter((c) => !knownIds.current.has(c._id));
+    const newItems = items.filter((c) => !knownIds.current.has(c._id));
     if (newItems.length === 0 && nodes.length > 0) return;
 
-    // Add new items to known set and maintain order
-    content.forEach((c) => {
+    // Track known ids with FIFO eviction so the board stays bounded.
+    items.forEach((c) => {
       if (!knownIds.current.has(c._id)) {
         knownIds.current.add(c._id);
         knownIdsOrder.current.push(c._id);
-        
-        // If we exceed max size, remove oldest entries (FIFO)
+
         if (knownIds.current.size > MAX_KNOWN_IDS) {
           const toRemove = knownIdsOrder.current.shift();
           if (toRemove) {
@@ -78,16 +79,17 @@ export function ContentWhiteboard({ content, isRunning }: ContentWhiteboardProps
       }
     });
 
-    // Limit displayed content to most recent items to prevent memory/performance issues
-    const displayContent = content.slice(0, MAX_DISPLAY_NODES);
+    // Limit displayed cards to the most recent items.
+    const display = items.slice(0, MAX_DISPLAY_NODES);
 
-    // Build content nodes with grid placement
-    const contentNodes: Node[] = displayContent.map((item, idx) => {
+    // One card per company; abstained companies use the distinct abstain node.
+    const cardNodes: Node[] = display.map((item, idx) => {
       const col = idx % COLS;
       const row = Math.floor(idx / COLS);
+      const abstained = item.score?.abstained === true;
       return {
         id: item._id,
-        type: "content",
+        type: abstained ? "abstain" : "content",
         position: {
           x: ORIGIN_X + col * (NODE_W + GAP_X),
           y: ORIGIN_Y + row * (NODE_H + GAP_Y),
@@ -96,55 +98,9 @@ export function ContentWhiteboard({ content, isRunning }: ContentWhiteboardProps
       };
     });
 
-    // Build agent cluster nodes
-    const agentGroups = new Map<number, DiscoveredContent[]>();
-    displayContent.forEach((c) => {
-      const list = agentGroups.get(c.found_by_agent_id) || [];
-      list.push(c);
-      agentGroups.set(c.found_by_agent_id, list);
-    });
-
-    const clusterNodes: Node[] = [];
-    let clusterY = ORIGIN_Y;
-    const clusterX = ORIGIN_X + COLS * (NODE_W + GAP_X) + 80;
-
-    agentGroups.forEach((items, agentId) => {
-      const agent = getAgentById(agentId);
-      clusterNodes.push({
-        id: `cluster-${agentId}`,
-        type: "agentCluster",
-        position: { x: clusterX, y: clusterY },
-        data: {
-          agentId,
-          agentName: agent.name,
-          agentColor: agent.color,
-          count: items.length,
-        } as unknown as Record<string, unknown>,
-        draggable: true,
-      });
-      clusterY += 80;
-    });
-
-    setNodes([...contentNodes, ...clusterNodes]);
-
-    // Build edges: content -> its agent cluster
-    const newEdges: Edge[] = displayContent.map((c) => {
-      const agent = getAgentById(c.found_by_agent_id);
-      return {
-        id: `edge-${c._id}`,
-        source: c._id,
-        target: `cluster-${c.found_by_agent_id}`,
-        type: "default",
-        animated: true,
-        style: {
-          stroke: agent?.color || "#334",
-          strokeWidth: 1,
-          opacity: 0.25,
-        },
-      };
-    });
-    setEdges(newEdges);
-  }, [content, setNodes, setEdges, nodes.length]);
+    setNodes(cardNodes);
+    setEdges([]);
+  }, [items, setNodes, setEdges, nodes.length]);
 
   const rfStyle = useMemo(
     () => ({
@@ -199,7 +155,7 @@ export function ContentWhiteboard({ content, isRunning }: ContentWhiteboardProps
               fontFamily: "'JetBrains Mono', monospace",
             }}
           >
-            Discoveries
+            Lead Board
           </span>
           <span
             style={{
@@ -208,13 +164,13 @@ export function ContentWhiteboard({ content, isRunning }: ContentWhiteboardProps
               fontFamily: "'JetBrains Mono', monospace",
             }}
           >
-            {content.length} items
+            {items.length} companies
           </span>
         </div>
       </div>
 
       {/* Empty state */}
-      {content.length === 0 && (
+      {items.length === 0 && (
         <div
           style={{
             position: "absolute",
@@ -256,7 +212,9 @@ export function ContentWhiteboard({ content, isRunning }: ContentWhiteboardProps
               fontFamily: "'JetBrains Mono', monospace",
             }}
           >
-            {isRunning ? "Agents are scanning..." : "Start a mission to discover content"}
+            {isRunning
+              ? "Detecting signals & scoring companies..."
+              : "Describe your ICP or paste a domain to begin"}
           </span>
         </div>
       )}
@@ -296,12 +254,13 @@ export function ContentWhiteboard({ content, isRunning }: ContentWhiteboardProps
         <MiniMap
           style={minimapStyle}
           nodeColor={(n) => {
-            if (n.type === "agentCluster") {
-              return (n.data as { agentColor?: string })?.agentColor || "#334";
+            if (n.type === "abstain") return "#f59e0b";
+            const score = (n.data as { score?: { score?: number } })?.score?.score;
+            if (typeof score === "number") {
+              if (score >= 70) return "#10b981";
+              if (score >= 50) return "#f59e0b";
             }
-            const agentId = (n.data as { found_by_agent_id?: number })?.found_by_agent_id;
-            const agent = agentId ? getAgentById(agentId) : null;
-            return agent?.color || "#445";
+            return "#445";
           }}
           pannable
           zoomable
