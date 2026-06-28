@@ -7,7 +7,12 @@ import { api } from "../convex/_generated/api";
 import { ResizablePane } from "./components/ResizablePane";
 import { ContentWhiteboard } from "./components/ContentWhiteboard";
 import { CommandOverlay } from "./components/CommandOverlay";
-import { type DiscoveredContent, type LogEntry, type AgentData, type AgentSignal } from "./hooks/useAgentData";
+import {
+  type BoardItem,
+  type LogEntry,
+  type AgentData,
+  type AgentSignal,
+} from "./hooks/useAgentData";
 
 // Dynamically import HorizonScene to avoid SSR issues with Three.js
 const HorizonScene = dynamic(
@@ -66,84 +71,91 @@ const HorizonScene = dynamic(
 );
 
 export default function Home() {
-  const [missionPrompt, setMissionPrompt] = useState("");
   const [isDeploying, setIsDeploying] = useState(false);
-  
-  // Queries
-  const latestMission = useQuery(api.missions.getLatestMission);
+
+  // ---- Queries -----------------------------------------------------------
+  // Board: running runs + scored companies (join companies + latest score).
+  const board = useQuery(api.queries.board.liveBoard);
+  // Viz tables (kept) power the 3D flourish + activity feed.
   const allAgents = useQuery(api.agents.getAllAgents) as AgentData[] | undefined;
-  const discoveries = useQuery(api.discoveries.getDiscoveries) as DiscoveredContent[] | undefined;
   const recentLogs = useQuery(api.logs.getRecentLogs, { limit: 50 }) as LogEntry[] | undefined;
   const recentSignals = useQuery(api.signals.getRecentSignals, { limit: 50 });
-  
-  // Mutations
-  const createMission = useMutation(api.missions.createMission);
+  // Reactive pipeline health (observability) for the command overlay.
+  const pipelineStats = useQuery(api.queries.health.pipelineStats);
+
+  // ---- Mutations ---------------------------------------------------------
+  // detect.recordSignal is internal; the public ingress for a typed ICP / domain
+  // is the HTTP POST /signal endpoint. We POST from the client.
+  // TODO(verify): confirm the public ingress (HTTP /signal) vs a public mutation.
   const sendCommand = useMutation(api.control.sendCommand);
   const resetAll = useMutation(api.cleanup.resetAll);
 
-  // Determine if swarm is running
-  const isRunning = useMemo(() => {
-    if (!latestMission) return false;
-    return !!(
-      latestMission.liveUrl ||
-      latestMission.liveUrl2 ||
-      latestMission.liveUrl3 ||
-      latestMission.liveUrl4 ||
-      latestMission.liveUrl5 ||
-      latestMission.liveUrl6 ||
-      latestMission.liveUrl7 ||
-      latestMission.liveUrl8 ||
-      latestMission.liveUrl9
-    );
-  }, [latestMission]);
-
-  // Build live URLs map for agents
-  const liveUrls = useMemo(() => {
-    if (!latestMission) return {};
+  // liveBoard shape is loosely typed (resolves after codegen). Accept either an
+  // array of board items or an object { items, runningCount }.
+  // TODO(verify): confirm liveBoard return shape against convex/queries/board.ts.
+  const { items, runningCount } = useMemo(() => {
+    if (!board) return { items: [] as BoardItem[], runningCount: 0 };
+    if (Array.isArray(board)) {
+      return { items: board as unknown as BoardItem[], runningCount: 0 };
+    }
+    const b = board as { items?: BoardItem[]; runningCount?: number; running?: unknown[] };
     return {
-      1: latestMission.liveUrl || null,
-      2: latestMission.liveUrl2 || null,
-      3: latestMission.liveUrl3 || null,
-      4: latestMission.liveUrl4 || null,
-      5: latestMission.liveUrl5 || null,
-      6: latestMission.liveUrl6 || null,
-      7: latestMission.liveUrl7 || null,
-      8: latestMission.liveUrl8 || null,
-      9: latestMission.liveUrl9 || null,
-    } as Record<number, string | null>;
-  }, [latestMission]);
+      items: (b.items ?? []) as BoardItem[],
+      runningCount: b.runningCount ?? (Array.isArray(b.running) ? b.running.length : 0),
+    };
+  }, [board]);
 
-  // Count active agents
-  const activeAgentCount = useMemo(() => {
-    return Object.values(liveUrls).filter(Boolean).length;
-  }, [liveUrls]);
+  // Running = there is an active run OR signals are still flowing in.
+  const isRunning = useMemo(
+    () => runningCount > 0 || (recentSignals?.length ?? 0) > 0,
+    [runningCount, recentSignals]
+  );
 
-  // Use actual signals from database (orbs)
+  // Signal sources have static live URLs (none in fixture mode); the 3D scene
+  // still lights up from the bridged signals table.
+  const liveUrls = useMemo(() => ({}) as Record<number, string | null>, []);
+
   const signals = useMemo(() => {
     return (recentSignals || []) as AgentSignal[];
   }, [recentSignals]);
 
-  // Handlers
+  // ---- Handlers ----------------------------------------------------------
   const handleCreateMission = useCallback(async (prompt: string) => {
-    if (prompt.trim()) {
-      setIsDeploying(true);
-      try {
-        await createMission({ prompt });
-        setMissionPrompt("");
-      } finally {
-        setIsDeploying(false);
-      }
+    const value = prompt.trim();
+    if (!value) return;
+    setIsDeploying(true);
+    try {
+      // A bare domain seeds detection directly; free text is treated as an ICP.
+      const isDomain = /^[a-z0-9.-]+\.[a-z]{2,}$/i.test(value);
+      await fetch("/api/signal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(
+          isDomain
+            ? { source: "manual", kind: "manual", companyDomain: value }
+            : { source: "manual", kind: "icp", payload: { icp: value } }
+        ),
+      }).catch(() => {
+        // Convex HTTP actions are served from the deployment origin; the lead
+        // wires the exact route. Swallow errors so the UI stays responsive.
+      });
+    } finally {
+      setIsDeploying(false);
     }
-  }, [createMission]);
+  }, []);
 
   const handleStopAll = useCallback(async () => {
-    if (confirm("⚠️ Stop all browser sessions? This will terminate all 9 agents.")) {
+    if (confirm("Stop all running pipelines?")) {
       await sendCommand({ command: "stop_all" });
     }
   }, [sendCommand]);
 
   const handleResetAll = useCallback(async () => {
-    if (confirm("⚠️ RESET ALL? This will:\n- Stop all browser sessions\n- Delete all missions\n- Delete all agents\n- Delete all discoveries\n- Delete all logs\n\nThis action cannot be undone!")) {
+    if (
+      confirm(
+        "RESET ALL? This deletes companies, leads, scores, actions, runs and logs. This cannot be undone."
+      )
+    ) {
       await resetAll();
     }
   }, [resetAll]);
@@ -154,12 +166,7 @@ export default function Home() {
         defaultWidth={520}
         minWidth={320}
         maxWidth={960}
-        left={
-          <ContentWhiteboard
-            content={discoveries || []}
-            isRunning={isRunning}
-          />
-        }
+        left={<ContentWhiteboard items={items} isRunning={isRunning} />}
         right={
           <div style={{ position: "relative", width: "100%", height: "100%" }}>
             <HorizonScene
@@ -176,9 +183,9 @@ export default function Home() {
       <CommandOverlay
         isRunning={isRunning}
         isDeploying={isDeploying}
-        missionPrompt={latestMission?.prompt || ""}
         logs={recentLogs || []}
-        activeAgentCount={activeAgentCount}
+        activeAgentCount={runningCount}
+        stats={pipelineStats}
         onCreateMission={handleCreateMission}
         onStopAll={handleStopAll}
         onResetAll={handleResetAll}
@@ -186,4 +193,3 @@ export default function Home() {
     </div>
   );
 }
-

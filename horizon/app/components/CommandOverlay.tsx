@@ -15,12 +15,20 @@ import {
   type LogEntry 
 } from "../hooks/useAgentData";
 
+interface PipelineStats {
+  running: number;
+  failed: number;
+  succeeded: number;
+  routed: number;
+  abstained: number;
+}
+
 interface CommandOverlayProps {
   isRunning: boolean;
   isDeploying: boolean;
-  missionPrompt: string;
   logs: LogEntry[];
   activeAgentCount: number;
+  stats?: PipelineStats;
   onCreateMission: (prompt: string) => void;
   onStopAll: () => void;
   onResetAll: () => void;
@@ -29,9 +37,9 @@ interface CommandOverlayProps {
 export function CommandOverlay({
   isRunning,
   isDeploying,
-  missionPrompt,
   logs,
   activeAgentCount,
+  stats,
   onCreateMission,
   onStopAll,
   onResetAll,
@@ -117,7 +125,24 @@ export function CommandOverlay({
               }}
             >
               <Activity size={10} />
-              <span>{activeAgentCount} AGENTS ACTIVE</span>
+              <span>{activeAgentCount} PIPELINES RUNNING</span>
+            </div>
+          )}
+          {stats && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                fontSize: 10,
+                letterSpacing: 1,
+              }}
+            >
+              <span style={{ color: "#10b981" }}>{stats.routed} ROUTED</span>
+              <span style={{ color: "#f59e0b" }}>{stats.abstained} ABSTAIN</span>
+              {stats.failed > 0 && (
+                <span style={{ color: "#dc2626" }}>{stats.failed} FAILED</span>
+              )}
             </div>
           )}
           <button
@@ -297,7 +322,7 @@ export function CommandOverlay({
                 type="text"
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Enter mission prompt..."
+                placeholder="Describe your ICP or paste a domain..."
                 disabled={isDeploying}
                 style={{
                   flex: 1,
@@ -339,35 +364,8 @@ export function CommandOverlay({
               }}
             >
               <Zap size={12} />
-              {isDeploying ? "Deploying..." : (isRunning ? "New Mission" : "Deploy")}
+              {isDeploying ? "Detecting..." : (isRunning ? "New Search" : "Detect")}
             </button>
-
-            {missionPrompt.toLowerCase().includes("pirate") && (
-              <button
-                type="button"
-                onClick={() => window.open("https://o4ughqhze0oik2yv.public.blob.vercel-storage.com/futureoneshot-9EOl64tGflLuUfxRu0LVWQ2kU5Uf3P.mov", "_blank")}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "10px 16px",
-                  background: "linear-gradient(135deg, #8b5cf6 0%, #6d28d9 100%)",
-                  border: "1px solid #a78bfa40",
-                  borderRadius: 3,
-                  color: "#ffffff",
-                  fontSize: 11,
-                  fontWeight: 600,
-                  fontFamily: "inherit",
-                  letterSpacing: 1,
-                  cursor: "pointer",
-                  textTransform: "uppercase",
-                  transition: "all 0.2s",
-                }}
-              >
-                <Activity size={12} />
-                Generate Video
-              </button>
-            )}
 
             {isRunning && (
               <button
@@ -406,7 +404,7 @@ export function CommandOverlay({
                 letterSpacing: 1,
               }}
             >
-              Try: &quot;Find trending SaaS marketing videos&quot; or &quot;Top performing fitness content on TikTok&quot;
+              Try: &quot;Series A fintech in the US, 50-200 employees&quot; or paste a domain like &quot;stripe.com&quot;
             </div>
           )}
         </div>

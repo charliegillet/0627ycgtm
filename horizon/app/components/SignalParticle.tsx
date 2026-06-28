@@ -63,9 +63,8 @@ export function SignalParticles({ signals }: { signals: AgentSignal[] }) {
       // Broadcast from center to specific agent
       const toIdx = latest.toAgent - 1;
       if (toIdx < 0 || toIdx >= AGENTS.length) return;
-      
-      const toAgent = AGENTS[toIdx];
-      
+
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- intentionally spawn a particle in response to a new signal row
       setParticles((prev) => [
         ...prev,
         {
@@ -84,7 +83,7 @@ export function SignalParticles({ signals }: { signals: AgentSignal[] }) {
       if (fromIdx < 0 || fromIdx >= AGENTS.length) return;
       
       const fromAgent = AGENTS[fromIdx];
-      
+
       setParticles((prev) => [
         ...prev,
         {
@@ -130,6 +129,7 @@ function Particle({ data }: { data: ActiveParticle }) {
       );
       ref.current.position.copy(pos);
     }
+    // eslint-disable-next-line react-hooks/immutability -- R3F per-frame mutation; progress is read by the cleanup filter
     data.progress = progress.current;
   });
 

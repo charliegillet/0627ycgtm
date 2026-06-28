@@ -125,6 +125,7 @@ function CosmeticOrb({ data }: { data: CosmeticOrb }) {
       );
       ref.current.position.copy(pos);
     }
+    // eslint-disable-next-line react-hooks/immutability -- R3F per-frame mutation; progress drives self-removal below
     data.progress = progress.current;
   });
 

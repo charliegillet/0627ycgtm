@@ -60,7 +60,7 @@ export const markCommandProcessing = mutation({
  */
 export const updateCommandStatus = mutation({
   args: {
-    commandId: v.string(),
+    commandId: v.id("control"),
     status: v.union(
       v.literal("pending"),
       v.literal("processing"),
@@ -68,7 +68,7 @@ export const updateCommandStatus = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.commandId as any, {
+    await ctx.db.patch(args.commandId, {
       status: args.status,
     });
   },

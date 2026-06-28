@@ -35,7 +35,7 @@ export const deleteAllDiscoveries = mutation({
 
 export const deleteAllLivestreams = mutation({
   args: {},
-  handler: async (ctx) => {
+  handler: async () => {
     // Livestream table removed from schema - this is a no-op
     return `Livestream table no longer exists`;
   },
