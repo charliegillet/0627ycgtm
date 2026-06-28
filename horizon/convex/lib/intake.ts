@@ -17,6 +17,30 @@ export type SignalInput = {
 };
 
 /**
+ * A parsed, validated signal body. Two shapes share the one ingress contract:
+ *   - "domain": the original Batch B path (validate + normalize a companyDomain).
+ *   - "icp": a natural-language ICP description that the resolver turns into
+ *     candidate domains, each of which then runs the normal domain pipeline.
+ * The `mode` discriminant is internal only; `toWireBody` strips it so nothing
+ * forwarded upstream carries it.
+ */
+export type ParsedSignal =
+  | {
+      mode: "domain";
+      source: string;
+      kind: string;
+      companyDomain: string;
+      payload?: unknown;
+    }
+  | { mode: "icp"; source: string; icp: string; limit: number };
+
+// Default and bounds for the ICP resolver fan-out (how many domains we resolve
+// an ICP to). Clamped so a caller cannot request an unbounded fan-out.
+const ICP_DEFAULT_LIMIT = 3;
+const ICP_MIN_LIMIT = 1;
+const ICP_MAX_LIMIT = 5;
+
+/**
  * Normalize a company domain to a bare host:
  *   - trim and lowercase
  *   - strip a leading scheme (`http://` / `https://`)
@@ -61,18 +85,25 @@ function isNonEmptyString(value: unknown): value is string {
 }
 
 /**
- * Validate and normalize an untrusted signal body.
+ * Validate and normalize an untrusted signal body into a `ParsedSignal`.
  *
- * Rejects anything that is not a non-null object, or where `source`,
- * `companyDomain`, or `kind` is not a non-empty string. `payload` is optional
- * (any). On success the returned value carries the NORMALIZED `companyDomain`;
- * if normalization yields an empty string the body is rejected.
+ * Both modes require `source` to be a non-empty string and `body` to be a
+ * non-null object.
+ *
+ * ICP mode (`body.kind === "icp"`): `body.payload` must be an object with a
+ * non-empty string `payload.icp`. `limit` defaults to 3; a provided `limit`
+ * must be a number (else reject) and is clamped to [1, 5].
+ *
+ * Domain mode (anything else): the original Batch B checks unchanged. `kind`
+ * and `companyDomain` must be non-empty strings; `companyDomain` is normalized
+ * and rejected if it normalizes to empty. A body with neither `kind:"icp"` nor
+ * a valid `companyDomain` falls through to these checks and is rejected.
  *
  * `error` is always a short, clean human string: no stack, no raw exception.
  */
 export function parseSignalBody(
   body: unknown,
-): { ok: true; value: SignalInput } | { ok: false; error: string } {
+): { ok: true; value: ParsedSignal } | { ok: false; error: string } {
   if (typeof body !== "object" || body === null) {
     return { ok: false, error: "body must be a JSON object" };
   }
@@ -80,6 +111,25 @@ export function parseSignalBody(
   if (!isNonEmptyString(b.source)) {
     return { ok: false, error: "source must be a non-empty string" };
   }
+
+  if (b.kind === "icp") {
+    if (typeof b.payload !== "object" || b.payload === null) {
+      return { ok: false, error: "payload must be an object with an icp string" };
+    }
+    const icp = (b.payload as Record<string, unknown>).icp;
+    if (!isNonEmptyString(icp)) {
+      return { ok: false, error: "payload.icp must be a non-empty string" };
+    }
+    let limit = ICP_DEFAULT_LIMIT;
+    if (b.limit !== undefined) {
+      if (typeof b.limit !== "number" || !Number.isFinite(b.limit)) {
+        return { ok: false, error: "limit must be a number" };
+      }
+      limit = Math.max(ICP_MIN_LIMIT, Math.min(ICP_MAX_LIMIT, Math.floor(b.limit)));
+    }
+    return { ok: true, value: { mode: "icp", source: b.source, icp, limit } };
+  }
+
   if (!isNonEmptyString(b.companyDomain)) {
     return { ok: false, error: "companyDomain must be a non-empty string" };
   }
@@ -93,10 +143,35 @@ export function parseSignalBody(
   return {
     ok: true,
     value: {
+      mode: "domain",
       source: b.source,
       companyDomain,
       kind: b.kind,
       payload: b.payload,
     },
+  };
+}
+
+/**
+ * Canonical body to forward upstream from the Next proxy to the Convex HTTP
+ * action. Strips the internal `mode` discriminant so the wire body re-parses to
+ * the identical `ParsedSignal` on the Convex side. Domain mode echoes the
+ * (now-normalized) fields; ICP mode rebuilds the `{ payload: { icp }, limit }`
+ * shape the action re-parses.
+ */
+export function toWireBody(value: ParsedSignal): Record<string, unknown> {
+  if (value.mode === "icp") {
+    return {
+      source: value.source,
+      kind: "icp",
+      payload: { icp: value.icp },
+      limit: value.limit,
+    };
+  }
+  return {
+    source: value.source,
+    kind: value.kind,
+    companyDomain: value.companyDomain,
+    payload: value.payload,
   };
 }

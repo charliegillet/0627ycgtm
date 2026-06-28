@@ -131,3 +131,73 @@ describe("POST /signal intake hardening (B1)", () => {
     expect(last).toBe(429);
   });
 });
+
+// Fails-if-reverted: if http.ts dropped the ICP branch, an ICP body would fall
+// through to the domain checks and 400 (no rows recorded); the row-count and
+// mode:"icp-fixture" assertions below would fail. If the ICP payload validation
+// were weakened, the no-payload.icp case would 200 instead of 400. If the ICP
+// rate-limit key were dropped, the 429 case would not trip.
+describe("POST /signal ICP path", () => {
+  it("resolves an ICP and records one signalEvents row per resolved domain", async () => {
+    const t = convexTest(schema, modules);
+    const res = await t.fetch(
+      "/signal",
+      post(
+        JSON.stringify({
+          source: "manual",
+          kind: "icp",
+          payload: { icp: "Series A fintech in the US, 50-200 employees" },
+          limit: 3,
+        }),
+      ),
+    );
+    expect(res.status).toBe(200);
+    const data = await res.json();
+    expect(data.mode).toBe("icp-fixture");
+    expect(Array.isArray(data.domains)).toBe(true);
+    expect(data.domains.length).toBeGreaterThan(0);
+    expect(data.results.length).toBe(data.domains.length);
+
+    // One signalEvents row was recorded per resolved domain, all kind
+    // "icp-derived" with the fixture provenance.
+    const rows = await t.run((ctx) =>
+      ctx.db.query("signalEvents").collect(),
+    );
+    expect(rows.length).toBe(data.domains.length);
+    for (const row of rows) {
+      expect(row.kind).toBe("icp-derived");
+      expect(data.domains).toContain(row.companyDomain);
+      expect(row.payload.resolvedBy).toBe("icp-fixture");
+    }
+  });
+
+  it("rejects an ICP body with no payload.icp as a clean 400 (no stack leak)", async () => {
+    const t = convexTest(schema, modules);
+    const res = await t.fetch(
+      "/signal",
+      post(JSON.stringify({ source: "manual", kind: "icp", payload: {} })),
+    );
+    expect(res.status).toBe(400);
+    const text = await res.text();
+    expect(text).not.toMatch(/at \w|ConvexError|Uncaught|\.ts:\d/);
+
+    const rows = await t.run((ctx) => ctx.db.query("signalEvents").collect());
+    expect(rows.length).toBe(0);
+  });
+
+  it("returns 429 for an ICP once its per-(source, icp) limit is exhausted", async () => {
+    const t = convexTest(schema, modules);
+    const icp = "devtools shop";
+    const source = "manual";
+    // Drive the limiter to exhaustion on the exact key http.ts uses.
+    const key = `icp:${source}:${icp}`;
+    for (let i = 0; i < 30; i++) {
+      await t.mutation(internal.rateLimit.take, { key });
+    }
+    const res = await t.fetch(
+      "/signal",
+      post(JSON.stringify({ source, kind: "icp", payload: { icp } })),
+    );
+    expect(res.status).toBe(429);
+  });
+});

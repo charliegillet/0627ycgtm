@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { parseSignalBody } from "../../../convex/lib/intake";
+import { parseSignalBody, toWireBody } from "../../../convex/lib/intake";
 
 /**
  * Ingress proxy: the client POSTs typed ICP / domain here; we forward to the
@@ -42,10 +42,13 @@ export async function POST(req: Request) {
   }
 
   try {
+    // Forward the canonical wire body: domain mode echoes the normalized fields,
+    // icp mode rebuilds { payload:{ icp }, limit }. The internal `mode`
+    // discriminant is stripped, so http.ts re-parses to the identical shape.
     const res = await fetch(`${site}/signal`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(parsed.value),
+      body: JSON.stringify(toWireBody(parsed.value)),
     });
     const data = await res.json().catch(() => ({}));
     return NextResponse.json(data, { status: res.status });

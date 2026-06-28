@@ -16,6 +16,7 @@ import type * as crons from "../crons.js";
 import type * as detect from "../detect.js";
 import type * as discoveries from "../discoveries.js";
 import type * as http from "../http.js";
+import type * as icp from "../icp.js";
 import type * as lib_convergence from "../lib/convergence.js";
 import type * as lib_idempotency from "../lib/idempotency.js";
 import type * as logs from "../logs.js";
@@ -52,6 +53,7 @@ declare const fullApi: ApiFromModules<{
   detect: typeof detect;
   discoveries: typeof discoveries;
   http: typeof http;
+  icp: typeof icp;
   "lib/convergence": typeof lib_convergence;
   "lib/idempotency": typeof lib_idempotency;
   logs: typeof logs;

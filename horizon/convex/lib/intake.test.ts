@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { normalizeDomain, parseSignalBody } from "./intake";
+import { normalizeDomain, parseSignalBody, toWireBody } from "./intake";
 
 // Fails-if-reverted: if normalizeDomain were removed/weakened, the scheme/www/
 // path-stripping cases below would return the raw input and fail. If
@@ -67,6 +67,7 @@ describe("parseSignalBody", () => {
     expect(r.ok).toBe(true);
     if (r.ok) {
       expect(r.value).toEqual({
+        mode: "domain",
         source: "webhook",
         companyDomain: "stripe.com",
         kind: "funding",
@@ -83,7 +84,8 @@ describe("parseSignalBody", () => {
       payload: { headcount: 12, nested: { ok: true } },
     });
     expect(r.ok).toBe(true);
-    if (r.ok) expect(r.value.payload).toEqual({ headcount: 12, nested: { ok: true } });
+    if (r.ok && r.value.mode === "domain")
+      expect(r.value.payload).toEqual({ headcount: 12, nested: { ok: true } });
   });
 
   it("rejects a numeric source (type-invalid) with a clean error", () => {
@@ -123,5 +125,144 @@ describe("parseSignalBody", () => {
     expect(
       parseSignalBody({ source: "s", companyDomain: "https://", kind: "k" }).ok,
     ).toBe(false);
+  });
+
+  it("tags domain bodies with mode:'domain'", () => {
+    const r = parseSignalBody({
+      source: "s",
+      companyDomain: "acme.com",
+      kind: "k",
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) expect(r.value.mode).toBe("domain");
+  });
+});
+
+// Fails-if-reverted: if the kind:"icp" branch were dropped, an ICP body would
+// fall through to the domain checks and be rejected for a missing companyDomain
+// (mode-checks below would fail). If the icp/payload validation were weakened,
+// the missing/empty/typed-wrong cases would wrongly parse ok.
+describe("parseSignalBody — ICP mode", () => {
+  it("accepts a valid ICP body, defaults limit to 3", () => {
+    const r = parseSignalBody({
+      source: "manual",
+      kind: "icp",
+      payload: { icp: "Series A fintech in the US, 50-200 employees" },
+    });
+    expect(r.ok).toBe(true);
+    if (r.ok) {
+      expect(r.value.mode).toBe("icp");
+      if (r.value.mode === "icp") {
+        expect(r.value.source).toBe("manual");
+        expect(r.value.icp).toBe(
+          "Series A fintech in the US, 50-200 employees",
+        );
+        expect(r.value.limit).toBe(3);
+      }
+    }
+  });
+
+  it("clamps an out-of-range limit into [1, 5] and floors it", () => {
+    const hi = parseSignalBody({
+      source: "s",
+      kind: "icp",
+      payload: { icp: "devtools" },
+      limit: 99,
+    });
+    const lo = parseSignalBody({
+      source: "s",
+      kind: "icp",
+      payload: { icp: "devtools" },
+      limit: 0,
+    });
+    const frac = parseSignalBody({
+      source: "s",
+      kind: "icp",
+      payload: { icp: "devtools" },
+      limit: 2.9,
+    });
+    expect(hi.ok && hi.value.mode === "icp" && hi.value.limit).toBe(5);
+    expect(lo.ok && lo.value.mode === "icp" && lo.value.limit).toBe(1);
+    expect(frac.ok && frac.value.mode === "icp" && frac.value.limit).toBe(2);
+  });
+
+  it("rejects an ICP body with missing or empty payload.icp", () => {
+    expect(
+      parseSignalBody({ source: "s", kind: "icp", payload: {} }).ok,
+    ).toBe(false);
+    expect(
+      parseSignalBody({ source: "s", kind: "icp", payload: { icp: "" } }).ok,
+    ).toBe(false);
+    expect(
+      parseSignalBody({ source: "s", kind: "icp", payload: { icp: "   " } }).ok,
+    ).toBe(false);
+    // payload itself missing / not an object.
+    expect(parseSignalBody({ source: "s", kind: "icp" }).ok).toBe(false);
+    expect(
+      parseSignalBody({ source: "s", kind: "icp", payload: "nope" }).ok,
+    ).toBe(false);
+  });
+
+  it("rejects an ICP body with a non-numeric limit", () => {
+    const r = parseSignalBody({
+      source: "s",
+      kind: "icp",
+      payload: { icp: "devtools" },
+      limit: "3",
+    });
+    expect(r.ok).toBe(false);
+  });
+
+  it("rejects a body with neither companyDomain nor kind:'icp'", () => {
+    // Falls through to the domain path, which needs a companyDomain.
+    expect(parseSignalBody({ source: "s", kind: "manual" }).ok).toBe(false);
+    expect(parseSignalBody({ source: "s" }).ok).toBe(false);
+  });
+});
+
+// Fails-if-reverted: toWireBody must strip the internal `mode` discriminant and
+// re-emit a body that parseSignalBody re-parses to the identical ParsedSignal.
+// If `mode` leaked or the icp shape were wrong, the round-trip below would fail.
+describe("toWireBody", () => {
+  it("round-trips a domain body without leaking `mode`", () => {
+    const parsed = parseSignalBody({
+      source: "webhook",
+      companyDomain: "HTTPS://WWW.Stripe.com/x",
+      kind: "funding",
+    });
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    const wire = toWireBody(parsed.value);
+    expect("mode" in wire).toBe(false);
+    expect(wire).toEqual({
+      source: "webhook",
+      kind: "funding",
+      companyDomain: "stripe.com",
+      payload: undefined,
+    });
+    // Re-parse yields the identical ParsedSignal.
+    const reparsed = parseSignalBody(wire);
+    expect(reparsed.ok && reparsed.value).toEqual(parsed.value);
+  });
+
+  it("round-trips an ICP body without leaking `mode`", () => {
+    const parsed = parseSignalBody({
+      source: "manual",
+      kind: "icp",
+      payload: { icp: "devtools shop" },
+      limit: 2,
+    });
+    expect(parsed.ok).toBe(true);
+    if (!parsed.ok) return;
+    const wire = toWireBody(parsed.value);
+    expect("mode" in wire).toBe(false);
+    expect(wire).toEqual({
+      source: "manual",
+      kind: "icp",
+      payload: { icp: "devtools shop" },
+      limit: 2,
+    });
+    const reparsed = parseSignalBody(wire);
+    expect(reparsed.ok && reparsed.value).toEqual(parsed.value);
   });
 });
