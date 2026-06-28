@@ -1,8 +1,18 @@
 # Loop State — BEACHHEAD (drive-to-production)
 
-Last run: 2026-06-28 ~19:34 (L1 planning run #1)
-Loop status: ACTIVE  ·  Phase: L1 (planning/report-only until promoted to L2)
-Invariants @ last run: ✅ tsc clean · ✅ vitest pass · ✅ eslint 0 errors · ✅ stripe routes (99,3/3) · ✅ acme abstains (11,1/3)
+Last run: 2026-06-28 ~20:02 (L2 build sprint — 6 items)
+Loop status: ACTIVE  ·  Phase: L2 (assisted build)
+Invariants @ last run: ✅ tsc clean · ✅ next build · ✅ vitest 14/14 · ✅ eslint 0 errors/0 warnings · ✅ stripe routes (99,3/3) · ✅ acme abstains (11,1/3)
+
+## Progress this session (L2)
+- ✅ P0-CI — `.github/workflows/ci.yml` (tsc+vitest+eslint+build)
+- ✅ P3-Lint — eslint 0 warnings/0 errors (ignore _generated; cleanup unused; SignalParticle)
+- ✅ P2-Idempotency — run-scoped signal processing (thread signalEventId; only the trigger marked)
+- ✅ P3-Tests — +2 integration tests (idempotency, act approval gate) → 14/14
+- ✅ P3-Observability — reactive `pipelineStats` query + overlay ROUTED/ABSTAIN/FAILED badges
+- ◑ P1-Workflow — component installed + registered + `gtmPipeline` defined & deploys; live-path
+  switch DEFERRED (convex-test can't drive the workflow component; needs an e2e test strategy)
+Still open: 🔒 P0-KEYS, P2-Vector dedup, 🔒 P2-Tenancy/auth, P3-Provider router, P3-Docs, 🔒 P4 deploy/merge.
 Kill switch: set `loop-pause-all` under High Priority to halt all runs.
 
 > The loop's job: walk the **Production Backlog** below to completion, one item per
