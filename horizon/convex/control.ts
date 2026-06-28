@@ -1,8 +1,21 @@
-import { mutation, query } from "./_generated/server";
+import { internalMutation, internalQuery, mutation } from "./_generated/server";
 import { v } from "convex/values";
+
+// Audit #2 (surface reduction): only sendCommand is client-called (the app's
+// "stop_all" button in app/page.tsx). getPendingCommands and the four status
+// mutations had no app/ or internal.* / api.* caller in convex/ and were
+// reachable only by the stale, unused legacy Python (finding #13, left alone),
+// so they are demoted to internal. sendCommand stays public because the app
+// genuinely calls it.
 
 /**
  * Send a control command (like stop_all)
+ *
+ * AUTH-TODO: this is genuinely client-called (app/page.tsx "stop_all" button)
+ * so it must remain a public mutation, but it currently has no auth: any
+ * unauthenticated client can issue stop_all/restart/pause. Adding auth is
+ * deferred to the later security PR (same deferral as act.ts / cleanup.ts) to
+ * avoid conflicting with the parallel PR #1.
  */
 export const sendCommand = mutation({
   args: {
@@ -28,7 +41,7 @@ export const sendCommand = mutation({
 /**
  * Get pending commands (for orchestrator to process)
  */
-export const getPendingCommands = query({
+export const getPendingCommands = internalQuery({
   args: {},
   handler: async (ctx) => {
     const commands = await ctx.db
@@ -44,7 +57,7 @@ export const getPendingCommands = query({
 /**
  * Mark a command as processing
  */
-export const markCommandProcessing = mutation({
+export const markCommandProcessing = internalMutation({
   args: {
     commandId: v.id("control"),
   },
@@ -58,7 +71,7 @@ export const markCommandProcessing = mutation({
 /**
  * Update command status (generic)
  */
-export const updateCommandStatus = mutation({
+export const updateCommandStatus = internalMutation({
   args: {
     commandId: v.id("control"),
     status: v.union(
@@ -77,7 +90,7 @@ export const updateCommandStatus = mutation({
 /**
  * Mark a command as completed
  */
-export const markCommandCompleted = mutation({
+export const markCommandCompleted = internalMutation({
   args: {
     commandId: v.id("control"),
   },
@@ -91,7 +104,7 @@ export const markCommandCompleted = mutation({
 /**
  * Clear all completed commands (cleanup)
  */
-export const clearCompletedCommands = mutation({
+export const clearCompletedCommands = internalMutation({
   args: {},
   handler: async (ctx) => {
     const completed = await ctx.db

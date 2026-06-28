@@ -1,10 +1,17 @@
-import { mutation, query } from "./_generated/server";
+import { internalMutation, internalQuery, query } from "./_generated/server";
 import { v } from "convex/values";
+
+// Audit #2 (surface reduction): only getRecentLogs is client-called
+// (app/page.tsx). addLog / clearLogs / getLogsByAgent had no app/ or
+// internal.* / api.* caller in convex/ (the BEACHHEAD pipeline writes via
+// internal.mutations.bridge, not addLog) and were reachable only by the stale,
+// unused legacy Python (finding #13, left alone). They are demoted to internal
+// so they are no longer part of the public API.
 
 /**
  * Add a log entry for an agent
  */
-export const addLog = mutation({
+export const addLog = internalMutation({
   args: {
     agent_id: v.number(),
     message: v.string(),
@@ -55,7 +62,7 @@ export const getRecentLogs = query({
 /**
  * Get logs for a specific agent
  */
-export const getLogsByAgent = query({
+export const getLogsByAgent = internalQuery({
   args: {
     agent_id: v.number(),
     limit: v.optional(v.number()),
@@ -76,7 +83,7 @@ export const getLogsByAgent = query({
 /**
  * Clear all logs (for testing/cleanup)
  */
-export const clearLogs = mutation({
+export const clearLogs = internalMutation({
   handler: async (ctx) => {
     const logs = await ctx.db.query("logs").collect();
     for (const log of logs) {
