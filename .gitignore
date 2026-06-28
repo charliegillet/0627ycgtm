@@ -1,6 +1,12 @@
 # macOS
 .DS_Store
 
+# Environment variables
+.env
+.env.local
+.env.*
+!.env.example
+
 .rocketride/
 
 # Vendored reference (not part of this project)
