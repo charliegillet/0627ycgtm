@@ -7,3 +7,6 @@ docs/transcripts/*.json
 
 # Local env
 .env
+
+# macOS
+.DS_Store
