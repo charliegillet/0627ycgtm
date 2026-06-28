@@ -14,19 +14,19 @@ import {
   LEG_COLORS,
   LEG_BADGES,
   type BoardItem,
-  type LegName,
 } from "../hooks/useAgentData";
-
-const LEG_ORDER: LegName[] = ["funding", "hiring", "tech"];
+import { LEG_ORDER, legFired, firedLegCount } from "../lib/legs";
 
 export const AbstainCard = memo(function AbstainCard({ data }: NodeProps) {
   const item = data as unknown as BoardItem;
   const company = item.company;
   const score = item.score;
-  const legs = score?.legs ?? null;
 
-  const firedLegs = LEG_ORDER.filter((n) => legs?.[n]);
-  const legsFired = score?.rubric?.legsFired ?? firedLegs.length;
+  // A leg "fired" only when it contributed POSITIVE points. A present-but-zero
+  // leg (stale funding, tech present:false) is real evidence that did NOT fire,
+  // so it must not light a badge or inflate the "X/3 legs" count. Mirrors the
+  // convergence rubric and ContentNode via the shared app/lib/legs helper.
+  const legsFired = firedLegCount(score);
 
   return (
     <div
@@ -70,7 +70,7 @@ export const AbstainCard = memo(function AbstainCard({ data }: NodeProps) {
         {/* Badges display */}
         <div className="flex items-center gap-2 mb-3.5">
           {LEG_ORDER.map((name) => {
-            const fired = !!legs?.[name];
+            const fired = legFired(score, name);
             const c = LEG_COLORS[name];
             return (
               <div

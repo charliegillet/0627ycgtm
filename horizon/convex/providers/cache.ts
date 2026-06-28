@@ -15,7 +15,15 @@ import type { ActionCtx } from "../_generated/server";
 
 // ----- db layer (runs inside Convex, may touch ctx.db) -----------------------
 
-// Read a cached response by (provider, op, key). Returns null on a miss.
+// Read a cached response by (provider, op, key).
+//
+// Presence-based (audit #8): we report `hit` from whether a ROW exists, not
+// from whether the stored value is non-null. A real live `null` (e.g.
+// orangeSlice returning null for a funding leg with no Crunchbase row) is a
+// legitimate cached value; the old `row?.response ?? null` collapsed "no row"
+// and "row holding null" into the same null, so a cached null was treated as a
+// miss and re-fetched every call. `response` is `null` on a miss (no row) and
+// the stored value (possibly null) on a hit.
 export const getCached = internalQuery({
   args: { provider: v.string(), op: v.string(), key: v.string() },
   handler: async (ctx, { provider, op, key }) => {
@@ -25,7 +33,7 @@ export const getCached = internalQuery({
         q.eq("provider", provider).eq("op", op).eq("key", key),
       )
       .unique();
-    return row?.response ?? null;
+    return { hit: row !== null, response: row?.response ?? null };
   },
 });
 
@@ -62,18 +70,20 @@ export const putCached = internalMutation({
 
 export type CacheRef = { provider: string; op: string; key: string };
 
-// Action-side cache read. Returns the cached response or null.
+// Action-side cache read. Returns `{ hit, value }`: `hit` is true when a row
+// exists for the key (even if the stored value is null); `value` is the stored
+// value (possibly null) on a hit, or null on a miss.
 export async function cacheGet(
   ctx: ActionCtx,
   provider: string,
   op: string,
   key: string,
-): Promise<unknown> {
-  return await ctx.runQuery(internal.providers.cache.getCached, {
-    provider,
-    op,
-    key,
-  });
+): Promise<{ hit: boolean; value: unknown }> {
+  const { hit, response } = await ctx.runQuery(
+    internal.providers.cache.getCached,
+    { provider, op, key },
+  );
+  return { hit, value: response };
 }
 
 // Action-side cache write.
@@ -94,16 +104,38 @@ export async function cachePut(
 
 // Cache-first wrapper: returns the cached response when present, otherwise runs
 // `fetcher`, caches its result, and returns it.
+//
+// `shouldCache` gates the write so callers can refuse to persist results that
+// must never be replayed (e.g. a synthetic fixture written on a live failure:
+// caching it would let a later cache HIT short-circuit the try/catch and
+// resurface the fixture mislabeled as a clean "live" success). Default: cache
+// everything (back-compat for callers that only ever return live data).
 export async function withCache<T>(
   ctx: ActionCtx,
   ref: CacheRef,
   fetcher: () => Promise<T>,
+  shouldCache: (value: T) => boolean = () => true,
 ): Promise<T> {
-  const cached = await cacheGet(ctx, ref.provider, ref.op, ref.key);
-  if (cached !== null && cached !== undefined) {
-    return cached as T;
+  return (await withCacheStatus(ctx, ref, fetcher, shouldCache)).value;
+}
+
+// Like `withCache` but also reports whether the value came from the cache. The
+// caller needs this so it can label a trace honestly: a value SERVED from cache
+// never ran the fetcher's try/catch, so its mode/level must be derived from the
+// value itself (and the hit flag), not from optimistic defaults.
+export async function withCacheStatus<T>(
+  ctx: ActionCtx,
+  ref: CacheRef,
+  fetcher: () => Promise<T>,
+  shouldCache: (value: T) => boolean = () => true,
+): Promise<{ value: T; cacheHit: boolean }> {
+  const { hit, value } = await cacheGet(ctx, ref.provider, ref.op, ref.key);
+  if (hit) {
+    return { value: value as T, cacheHit: true };
   }
   const fresh = await fetcher();
-  await cachePut(ctx, ref.provider, ref.op, ref.key, fresh);
-  return fresh;
+  if (shouldCache(fresh)) {
+    await cachePut(ctx, ref.provider, ref.op, ref.key, fresh);
+  }
+  return { value: fresh, cacheHit: false };
 }

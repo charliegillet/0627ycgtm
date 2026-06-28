@@ -35,6 +35,7 @@ const HorizonScene = dynamic(
 export default function Home() {
   const [isDeploying, setIsDeploying] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [icpStatus, setIcpStatus] = useState<string | null>(null);
 
   // ---- Queries -----------------------------------------------------------
   // Board: running runs + scored companies (join companies + latest score).
@@ -83,25 +84,43 @@ export default function Home() {
   }, [recentSignals]);
 
   // ---- Handlers ----------------------------------------------------------
-  const handleCreateMission = useCallback(async (prompt: string) => {
+  // Returns true on success (input should clear); false if the ICP could not
+  // be resolved (input stays so the user can refine it).
+  const handleCreateMission = useCallback(async (prompt: string): Promise<boolean> => {
     const value = prompt.trim();
-    if (!value) return;
+    if (!value) return false;
     setIsDeploying(true);
+    setIcpStatus(null);
     try {
       // A bare domain seeds detection directly; free text is treated as an ICP.
       const isDomain = /^[a-z0-9.-]+\.[a-z]{2,}$/i.test(value);
-      await fetch("/api/signal", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(
-          isDomain
-            ? { source: "manual", kind: "manual", companyDomain: value }
-            : { source: "manual", kind: "icp", payload: { icp: value } }
-        ),
-      }).catch(() => {
-        // Convex HTTP actions are served from the deployment origin; the lead
-        // wires the exact route. Swallow errors so the UI stays responsive.
-      });
+      if (isDomain) {
+        // Domain path: fire-and-forget, clear on submit (success assumed).
+        await fetch("/api/signal", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ source: "manual", kind: "manual", companyDomain: value }),
+        }).catch(() => {});
+        return true;
+      }
+      // ICP path: capture the response and surface status.
+      let data: { ok?: boolean; domains?: string[] } | null = null;
+      try {
+        const res = await fetch("/api/signal", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ source: "manual", kind: "icp", payload: { icp: value }, limit: 3 }),
+        });
+        data = await res.json().catch(() => null);
+      } catch {
+        // Network failure — treat as unresolved.
+      }
+      if (data && data.ok && Array.isArray(data.domains) && data.domains.length > 0) {
+        setIcpStatus(`Resolved to: ${data.domains.join(", ")}`);
+        return true;
+      }
+      setIcpStatus("Could not resolve that ICP. Try a domain, or a broader description.");
+      return false;
     } finally {
       setIsDeploying(false);
     }
@@ -116,7 +135,7 @@ export default function Home() {
   const handleResetAll = useCallback(async () => {
     if (
       confirm(
-        "RESET ALL? This deletes companies, leads, scores, actions, runs and logs. This cannot be undone."
+        "RESET ALL? This deletes the BEACHHEAD tables (companies, leads, signal events, scores, actions, runs, traces, API cache) and the legacy viz tables (logs, signals). This cannot be undone."
       )
     ) {
       await resetAll();
@@ -152,6 +171,7 @@ export default function Home() {
         stats={pipelineStats}
         isSidebarOpen={isSidebarOpen}
         onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+        icpStatus={icpStatus}
         onCreateMission={handleCreateMission}
         onStopAll={handleStopAll}
         onResetAll={handleResetAll}

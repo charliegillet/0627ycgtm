@@ -37,7 +37,8 @@ interface CommandOverlayProps {
   stats?: PipelineStats;
   isSidebarOpen: boolean;
   onToggleSidebar: () => void;
-  onCreateMission: (prompt: string) => void;
+  icpStatus?: string | null;
+  onCreateMission: (prompt: string) => Promise<boolean>;
   onStopAll: () => void;
   onResetAll: () => void;
 }
@@ -50,6 +51,7 @@ export function CommandOverlay({
   stats,
   isSidebarOpen,
   onToggleSidebar,
+  icpStatus,
   onCreateMission,
   onStopAll,
   onResetAll,
@@ -64,11 +66,11 @@ export function CommandOverlay({
     }
   }, [logs]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!query.trim()) return;
-    onCreateMission(query.trim());
-    setQuery("");
+    const success = await onCreateMission(query.trim());
+    if (success) setQuery("");
   };
 
   return (
@@ -284,6 +286,18 @@ export function CommandOverlay({
               </button>
             )}
           </form>
+
+          {icpStatus && (
+            <div
+              style={{
+                fontSize: 9,
+                letterSpacing: 1,
+                color: icpStatus.startsWith("Resolved") ? "#10b981" : "#f59e0b",
+              }}
+            >
+              {icpStatus}
+            </div>
+          )}
 
           {!isRunning && (
             <div className="text-center text-[10px] text-zinc-500 font-bold tracking-widest font-display uppercase flex items-center justify-center gap-2.5">
