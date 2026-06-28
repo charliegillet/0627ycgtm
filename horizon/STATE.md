@@ -1,7 +1,8 @@
 # Loop State — BEACHHEAD (drive-to-production)
 
-Last run: (set by the loop each run)
+Last run: 2026-06-28 ~19:34 (L1 planning run #1)
 Loop status: ACTIVE  ·  Phase: L1 (planning/report-only until promoted to L2)
+Invariants @ last run: ✅ tsc clean · ✅ vitest pass · ✅ eslint 0 errors · ✅ stripe routes (99,3/3) · ✅ acme abstains (11,1/3)
 Kill switch: set `loop-pause-all` under High Priority to halt all runs.
 
 > The loop's job: walk the **Production Backlog** below to completion, one item per
@@ -55,7 +56,28 @@ Legend: 🔒 = HUMAN gate (loop proposes/PRs only, never self-approves) · ⛓ b
 ---
 
 ## High Priority (loop is acting or waiting on human)
-<!-- - [ ] ID — desc / Loop action: ... / Human decision: ... -->
+
+- [ ] **P0-CI — CI workflow** (SELECTED this run; plan ready for L2)
+  Loop action (L1, plan only — no code changed): when promoted to L2, the maker creates
+  `.github/workflows/ci.yml` (repo root) that, on PR/push to `beachhead` + `master`:
+    1. checkout · setup-node@20 · `cd horizon` · `npm ci`
+    2. `npx tsc --noEmit` (works in CI: `convex/_generated` is committed — no deployment needed)
+    3. `npx vitest run`  (12 tests: pure logic + convex-test integration)
+    4. `npx eslint convex/ app/ --quiet`  (gate: 0 errors)
+    5. `npx next build`  — set a dummy `NEXT_PUBLIC_CONVEX_URL=https://placeholder.convex.cloud`
+       env so the client provider instantiates during page-data collection.
+  Verification that proves it done: the workflow shows green on a test PR.
+  Files: `.github/workflows/ci.yml` (new). Risk: low. Codegen needed: no.
+  Human decision: (pending — promote loop to L2 to execute)
+
+- [ ] 🔒 **P0-KEYS — Live keys + signal validation (NEEDS HUMAN)**
+  Why escalated: setting real provider keys + validating the live data path is a human gate
+  (denylist: keys; no real sends without approval).
+  What the loop needs from you:
+    1. `npx convex env set ORANGESLICE_API_KEY <key>` (+ `FIBER_API_KEY`, optional `OPENAI_API_KEY` + `npm i ai`).
+    2. Say "keys set" — the loop will then fire `/signal` against a real seeded account and
+       record whether the live legs return data (provider switch is env-based; no code change).
+  Human decision: (pending)
 
 ## Watch List
 - PR #2 — CI + review status.

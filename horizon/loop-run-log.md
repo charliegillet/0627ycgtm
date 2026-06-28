@@ -11,3 +11,9 @@ Append one JSON entry per run. Prune entries older than 30 days.
 
 ## Recent Runs
 <!-- newest first -->
+```json
+{ "run_id": "2026-06-28T19:34:00Z", "loop": "beachhead-production", "phase": "L1",
+  "item": "P0-CI", "duration_s": 60, "checks": "tsc:clean build:n/a vitest:pass eslint:0 invariants:green",
+  "verdict": "no-op (plan only)", "tokens_estimate": 30000, "escalations": 1 }
+```
+
