@@ -20,26 +20,37 @@ export type SignalInput = {
  * Normalize a company domain to a bare host:
  *   - trim and lowercase
  *   - strip a leading scheme (`http://` / `https://`)
- *   - strip a leading `www.`
+ *   - strip a leading userinfo segment (`user@` / `user:pass@`)
+ *   - strip one or more leading `www.` prefixes
  *   - keep host only (drop any path / query / fragment)
+ *   - strip a trailing `:port`
  *   - strip a trailing dot and trailing slash
  *
  * Examples:
- *   "HTTPS://WWW.Stripe.com/pricing?x=1#a" -> "stripe.com"
- *   "Acme.COM/"                            -> "acme.com"
- *   "  http://www.foo.io  "                -> "foo.io"
+ *   "HTTPS://WWW.Stripe.com/pricing?x=1#a"      -> "stripe.com"
+ *   "Acme.COM/"                                 -> "acme.com"
+ *   "  http://www.foo.io  "                     -> "foo.io"
+ *   "host.com:8080"                             -> "host.com"
+ *   "user:pass@host.com"                        -> "host.com"
+ *   "https://user@WWW.WWW.Foo.com:443/x?y#z"    -> "foo.com"
  *
- * Empty / whitespace-only input returns "".
+ * Empty / whitespace-only input returns "". Pure and never throws.
  */
 export function normalizeDomain(input: string): string {
   let s = input.trim().toLowerCase();
   if (s === "") return "";
   // Strip scheme.
   s = s.replace(/^https?:\/\//, "");
-  // Strip leading www.
-  s = s.replace(/^www\./, "");
+  // Strip a leading userinfo segment (everything up to and including an `@`
+  // that precedes the host). The class excludes path/query/fragment delims so a
+  // later `@` inside a path cannot be mistaken for userinfo.
+  s = s.replace(/^[^@/?#]+@/, "");
+  // Strip one or more leading www. prefixes (e.g. www.www.foo.com -> foo.com).
+  s = s.replace(/^(www\.)+/, "");
   // Keep host only: cut at the first path / query / fragment delimiter.
   s = s.split(/[/?#]/)[0];
+  // Strip a trailing :port from the host segment.
+  s = s.replace(/:\d+$/, "");
   // Strip a trailing dot (FQDN root) and any stray trailing slash.
   s = s.replace(/[./]+$/, "");
   return s;

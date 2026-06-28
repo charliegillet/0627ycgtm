@@ -33,6 +33,28 @@ describe("normalizeDomain", () => {
   it("leaves an already-bare domain untouched (just lowercases)", () => {
     expect(normalizeDomain("stripe.com")).toBe("stripe.com");
   });
+
+  // M1: strip a trailing :port so "host.com:8080" and "host.com" share one key.
+  it("strips a trailing port", () => {
+    expect(normalizeDomain("host.com:8080")).toBe("host.com");
+  });
+
+  // M1: strip leading userinfo so credentials never fragment the key.
+  it("strips leading userinfo (user:pass@)", () => {
+    expect(normalizeDomain("user:pass@host.com")).toBe("host.com");
+  });
+
+  // M2: collapse repeated leading www. prefixes.
+  it("collapses repeated leading www. prefixes", () => {
+    expect(normalizeDomain("WWW.WWW.foo.com")).toBe("foo.com");
+  });
+
+  // M1 + M2 combined: scheme + userinfo + repeated www + port + path/query/fragment.
+  it("handles scheme, userinfo, repeated www, port and path together", () => {
+    expect(normalizeDomain("https://user@WWW.WWW.Foo.com:443/x?y#z")).toBe(
+      "foo.com",
+    );
+  });
 });
 
 describe("parseSignalBody", () => {
