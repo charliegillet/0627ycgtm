@@ -15,7 +15,7 @@ _The real-time GTM war room that finds your in-market accounts — and tells you
 
 ---
 
-![BEACHHEAD Dashboard](‹link to screenshot of the 3D swarm and lead board›)
+![BEACHHEAD Dashboard](#)
 
 **BEACHHEAD** finds the companies standing up a new go-to-market motion in real time — pulling live funding, hiring, and tech-adoption signals, converging them on a single account, scoring fit, and routing one qualified human handoff. Its defining feature: when the evidence isn't there, it **abstains out loud** instead of guessing.
 
