@@ -31,7 +31,7 @@ const nodeTypes: NodeTypes = {
   abstain: AbstainCard,
 };
 
-const NODE_W = 320;
+const NODE_W = 300;
 const NODE_H = 260;
 const GAP_X = 40;
 const GAP_Y = 40;

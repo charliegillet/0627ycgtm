@@ -9,7 +9,8 @@ import {
   StopCircle,
   RotateCcw,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  PanelLeft
 } from "lucide-react";
 import { 
   getAgentById, 
@@ -31,6 +32,8 @@ interface CommandOverlayProps {
   logs: LogEntry[];
   activeAgentCount: number;
   stats?: PipelineStats;
+  isSidebarOpen: boolean;
+  onToggleSidebar: () => void;
   onCreateMission: (prompt: string) => void;
   onStopAll: () => void;
   onResetAll: () => void;
@@ -42,6 +45,8 @@ export function CommandOverlay({
   logs,
   activeAgentCount,
   stats,
+  isSidebarOpen,
+  onToggleSidebar,
   onCreateMission,
   onStopAll,
   onResetAll,
@@ -68,6 +73,15 @@ export function CommandOverlay({
       {/* Top bar */}
       <div className="fixed top-0 left-0 right-0 h-14 flex items-center justify-between px-6 bg-black/60 backdrop-blur-lg border-b border-white/5 z-50 font-sans">
         <div className="flex items-center gap-3">
+          <button
+            onClick={onToggleSidebar}
+            className={`p-1.5 rounded-md transition-colors ${
+              isSidebarOpen ? "bg-zinc-800 text-zinc-100" : "text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800"
+            }`}
+            title="Toggle Lead Board"
+          >
+            <PanelLeft size={16} />
+          </button>
           <div
             className="w-2 h-2 rounded-full transition-all duration-300"
             style={{
@@ -113,30 +127,22 @@ export function CommandOverlay({
 
       {/* Signal/Log panel - right side */}
       {logs.length > 0 && (
-        <div
-          className={`fixed top-20 right-6 w-96 font-sans bg-zinc-950/80 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl transition-all duration-300 z-40 ${
-            isLogMinimized ? "max-h-[50px] overflow-hidden" : "max-h-[calc(100vh-180px)] flex flex-col gap-3 p-4"
-          }`}
-        >
+        <div className="fixed top-20 right-6 z-40 font-sans flex flex-col items-end pointer-events-none">
           {isLogMinimized ? (
-            <div 
-              className="flex items-center justify-between p-3 cursor-pointer hover:bg-white/5 transition-colors"
+            <button 
               onClick={() => setIsLogMinimized(false)}
+              className="flex items-center gap-2 bg-zinc-950/80 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl px-4 py-3 hover:bg-white/5 transition-colors group pointer-events-auto"
             >
-              <div className="flex items-center gap-2 text-xs font-semibold text-zinc-100">
-                <Radio size={12} className="text-zinc-400" />
-                Activity Log
-                <span className="text-zinc-500 font-normal ml-1">
-                  ({logs.length})
-                </span>
-              </div>
-              <ChevronDown size={14} className="text-zinc-400" />
-            </div>
+              <Radio size={12} className="text-zinc-400 group-hover:text-emerald-400 transition-colors" />
+              <span className="text-xs font-semibold text-zinc-100">Activity Log</span>
+              <span className="text-xs text-zinc-500 font-normal ml-1">({logs.length})</span>
+              <ChevronDown size={14} className="text-zinc-400 ml-2 group-hover:text-zinc-100 transition-colors" />
+            </button>
           ) : (
-            <>
-              <div className="text-xs font-semibold text-zinc-100 flex items-center justify-between pb-2 border-b border-white/5">
+            <div className="w-96 bg-zinc-950/80 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl p-4 flex flex-col gap-3 max-h-[calc(100vh-180px)] overflow-hidden pointer-events-auto">
+              <div className="text-xs font-semibold text-zinc-100 flex items-center justify-between pb-2 border-b border-white/5 shrink-0">
                 <div className="flex items-center gap-2">
-                  <Radio size={12} className="text-zinc-400" />
+                  <Radio size={12} className="text-emerald-400" />
                   Activity Log
                 </div>
                 <div className="flex items-center gap-3">
@@ -145,13 +151,13 @@ export function CommandOverlay({
                   </span>
                   <button 
                     onClick={() => setIsLogMinimized(true)}
-                    className="text-zinc-400 hover:text-zinc-100 transition-colors"
+                    className="p-1 -mr-1 rounded-md text-zinc-400 hover:text-zinc-100 hover:bg-white/5 transition-colors"
                   >
                     <ChevronUp size={14} />
                   </button>
                 </div>
               </div>
-              <div ref={logRef} className="flex flex-col overflow-y-auto pr-1" style={{ maxHeight: "calc(100vh - 240px)" }}>
+              <div ref={logRef} className="flex flex-col overflow-y-auto pr-1">
                 {logs.slice(0, 30).map((log, i) => {
                   const agent = getAgentById(log.agent_id);
                   return (
@@ -185,7 +191,7 @@ export function CommandOverlay({
                   );
                 })}
               </div>
-            </>
+            </div>
           )}
         </div>
       )}

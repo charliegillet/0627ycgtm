@@ -30,7 +30,7 @@ export const AbstainCard = memo(function AbstainCard({ data }: NodeProps) {
 
   return (
     <div
-      className="w-[320px] bg-zinc-950 border border-amber-500/20 rounded-xl overflow-hidden font-sans opacity-95 shadow-lg"
+      className="w-[300px] bg-zinc-950 border border-amber-500/20 rounded-xl overflow-hidden font-sans opacity-95 shadow-lg"
     >
       <Handle
         type="target"

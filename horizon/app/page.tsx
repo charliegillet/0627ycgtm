@@ -34,6 +34,7 @@ const HorizonScene = dynamic(
 
 export default function Home() {
   const [isDeploying, setIsDeploying] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   // ---- Queries -----------------------------------------------------------
   // Board: running runs + scored companies (join companies + latest score).
@@ -125,9 +126,10 @@ export default function Home() {
   return (
     <div className="fixed inset-0 overflow-hidden bg-black text-zinc-100 font-sans">
       <ResizablePane
-        defaultWidth={640}
-        minWidth={420}
+        defaultWidth={420}
+        minWidth={320}
         maxWidth={960}
+        isSidebarOpen={isSidebarOpen}
         left={<ContentWhiteboard items={items} isRunning={isRunning} />}
         right={
           <div className="relative w-full h-full">
@@ -148,6 +150,8 @@ export default function Home() {
         logs={recentLogs || []}
         activeAgentCount={runningCount}
         stats={pipelineStats}
+        isSidebarOpen={isSidebarOpen}
+        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
         onCreateMission={handleCreateMission}
         onStopAll={handleStopAll}
         onResetAll={handleResetAll}

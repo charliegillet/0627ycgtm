@@ -13,6 +13,7 @@ interface ResizablePaneProps {
   defaultWidth?: number;
   minWidth?: number;
   maxWidth?: number;
+  isSidebarOpen?: boolean;
 }
 
 export function ResizablePane({
@@ -21,35 +22,37 @@ export function ResizablePane({
   defaultWidth = 640,
   minWidth = 420,
   maxWidth = 960,
+  isSidebarOpen = true,
 }: ResizablePaneProps) {
   const [width, setWidth] = useState(defaultWidth);
-  const isDragging = useRef(false);
+  const [isDragging, setIsDragging] = useState(false);
   const startX = useRef(0);
   const startWidth = useRef(0);
 
   const handleMouseDown = useCallback(
     (e: React.MouseEvent) => {
+      if (!isSidebarOpen) return;
       e.preventDefault();
-      isDragging.current = true;
+      setIsDragging(true);
       startX.current = e.clientX;
       startWidth.current = width;
       document.body.style.cursor = "col-resize";
       document.body.style.userSelect = "none";
     },
-    [width]
+    [width, isSidebarOpen]
   );
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (!isDragging.current) return;
+      if (!isDragging || !isSidebarOpen) return;
       const delta = e.clientX - startX.current;
       const next = Math.min(maxWidth, Math.max(minWidth, startWidth.current + delta));
       setWidth(next);
     };
 
     const handleMouseUp = () => {
-      if (!isDragging.current) return;
-      isDragging.current = false;
+      if (!isDragging) return;
+      setIsDragging(false);
       document.body.style.cursor = "";
       document.body.style.userSelect = "";
     };
@@ -60,34 +63,38 @@ export function ResizablePane({
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
-  }, [minWidth, maxWidth]);
+  }, [minWidth, maxWidth, isDragging, isSidebarOpen]);
 
   return (
     <div className="flex w-full h-full overflow-hidden">
       {/* Left pane */}
       <div
-        style={{ width }}
-        className="shrink-0 h-full overflow-hidden relative"
+        style={{ width: isSidebarOpen ? width : 0 }}
+        className={`shrink-0 h-full overflow-hidden relative ${isDragging ? '' : 'transition-[width] duration-300 ease-in-out'}`}
       >
-        {left}
+        <div style={{ width: width }} className="h-full relative">
+          {left}
+        </div>
       </div>
 
       {/* Drag handle */}
-      <div
-        onMouseDown={handleMouseDown}
-        className="w-[6px] shrink-0 cursor-col-resize relative z-20 flex items-center justify-center group"
-      >
-        <div className="absolute w-[1px] h-full bg-[#141822] group-hover:bg-[#00f0ff] transition-colors" />
-        <div className="flex flex-col gap-[3px] z-10">
-          {[0, 1, 2, 3, 4].map((i) => (
-            <div
-              key={i}
-              className="w-[3px] h-[3px] rounded-full bg-[#2a2f3e] group-hover:bg-[#00f0ff] transition-colors"
-            />
-          ))}
+      {isSidebarOpen && (
+        <div
+          onMouseDown={handleMouseDown}
+          className="w-[6px] shrink-0 cursor-col-resize relative z-20 flex items-center justify-center group"
+        >
+          <div className="absolute w-[1px] h-full bg-white/5 group-hover:bg-[#10b981] transition-colors" />
+          <div className="flex flex-col gap-[3px] z-10">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="w-[3px] h-[3px] rounded-full bg-zinc-700 group-hover:bg-[#10b981] transition-colors"
+              />
+            ))}
+          </div>
+          <div className="absolute inset-y-0 -inset-x-2 cursor-col-resize" />
         </div>
-        <div className="absolute inset-y-0 -inset-x-1 cursor-col-resize" />
-      </div>
+      )}
 
       {/* Right pane */}
       <div className="flex-1 h-full overflow-hidden relative min-w-0">

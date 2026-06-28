@@ -61,7 +61,7 @@ export const ContentNode = memo(function ContentNode({ data }: NodeProps) {
 
   return (
     <div
-      className="w-[320px] bg-zinc-950/90 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden font-sans cursor-pointer shadow-xl transition-all duration-200 ease-out hover:border-zinc-700 hover:shadow-2xl"
+      className="w-[300px] bg-zinc-950/90 backdrop-blur-md border border-white/10 rounded-xl overflow-hidden font-sans cursor-pointer shadow-xl transition-all duration-200 ease-out hover:border-zinc-700 hover:shadow-2xl"
       onClick={() => setOpen((v) => !v)}
     >
       <Handle
