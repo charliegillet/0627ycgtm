@@ -12,7 +12,10 @@ Invariants @ last run: ✅ tsc clean · ✅ next build · ✅ vitest 14/14 · �
 - ✅ P3-Observability — reactive `pipelineStats` query + overlay ROUTED/ABSTAIN/FAILED badges
 - ◑ P1-Workflow — component installed + registered + `gtmPipeline` defined & deploys; live-path
   switch DEFERRED (convex-test can't drive the workflow component; needs an e2e test strategy)
-Still open: 🔒 P0-KEYS, P2-Vector dedup, 🔒 P2-Tenancy/auth, P3-Provider router, P3-Docs, 🔒 P4 deploy/merge.
+- ✅ P3-Provider router — `providers/router.ts` LEG_ROUTING + callLeg; legs swappable in one map
+- ✅ P3-Docs — `docs/demo-runbook.md` (3-beat demo, live commands, honesty + kill list)
+Still open (gated/deferred): 🔒 P0-KEYS, P2-Vector dedup (needs OPENAI_API_KEY for embeddings),
+🔒 P2-Tenancy/auth, P1-Workflow live wiring, 🔒 P4 deploy/merge.
 Kill switch: set `loop-pause-all` under High Priority to halt all runs.
 
 > The loop's job: walk the **Production Backlog** below to completion, one item per
