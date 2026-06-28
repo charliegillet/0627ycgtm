@@ -2,3 +2,6 @@
 .DS_Store
 
 .rocketride/
+
+# Vendored reference (not part of this project)
+loop-engineering-*/
