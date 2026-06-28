@@ -64,7 +64,10 @@ export const recordSignal = internalMutation({
       source: args.source,
       kind: args.kind,
       companyDomain: args.companyDomain,
-      payload: args.payload ?? { __synthetic: true },
+      // Store the payload as-is. An omitted payload is NOT assumed synthetic:
+      // provenance is only claimed when the caller actually marks it (the cron
+      // poll does). Over-tagging here would mislabel a real ingress signal.
+      payload: args.payload ?? {},
       processed: false,
       detectedAt: now,
     });
@@ -83,10 +86,12 @@ export const recordSignal = internalMutation({
       at: now,
     });
 
-    // Light up the 3D viz scene.
+    // Light up the 3D viz scene. Provenance comes from the incoming payload:
+    // the cron poll seeds __synthetic signals; a real POST /signal does not.
     await ctx.runMutation(internal.mutations.bridge.bridgeSignal, {
       message: `${args.source}: ${args.kind} @ ${args.companyDomain}`,
       signalType: "detect",
+      synthetic: payloadIsSynthetic(args.payload),
     });
 
     // Default path: one-shot scheduled pipeline (fully tested via convex-test).
@@ -240,8 +245,13 @@ export const upsertCompany = internalMutation({
       .withIndex("by_domain", (q) => q.eq("domain", args.domain))
       .first();
 
+    // Tag the enrichment blob's provenance from the ACTUAL legs, not a blanket
+    // true. A leg only carries __synthetic when it came from a fixture (live
+    // legs never do — see providers/orangeSlice). So the company enrichment is
+    // synthetic only if at least one leg is synthetic; a fully live-derived
+    // company is NOT mislabeled.
     const enrichment = {
-      __synthetic: true,
+      __synthetic: legsAreSynthetic(args.legs),
       legs: args.legs,
       enrichedAt: Date.now(),
     };
@@ -318,4 +328,39 @@ export const trace = internalMutation({
 function deriveName(domain: string): string {
   const base = domain.split(".")[0] ?? domain;
   return base.charAt(0).toUpperCase() + base.slice(1);
+}
+
+/**
+ * payloadIsSynthetic — true when an incoming signal payload is explicitly
+ * marked synthetic (the cron poll seeds these). A real ingress payload (or no
+ * payload) is treated as live so its bridged log is not mislabeled.
+ */
+function payloadIsSynthetic(payload: unknown): boolean {
+  return Boolean(
+    payload &&
+      typeof payload === "object" &&
+      (payload as Record<string, unknown>).__synthetic
+  );
+}
+
+/**
+ * legsAreSynthetic — true when any persisted leg carries the __synthetic marker
+ * (i.e. came from a fixture, including a live-failure degrade). Live-derived
+ * legs never carry the marker, so a fully live enrichment returns false and is
+ * not mislabeled. Defensive against the loosely-typed (v.any) legs blob.
+ */
+function legsAreSynthetic(legs: unknown): boolean {
+  if (!legs || typeof legs !== "object") return false;
+  const blob = legs as Record<string, unknown>;
+  for (const name of ["funding", "hiring", "tech"]) {
+    const leg = blob[name];
+    if (
+      leg &&
+      typeof leg === "object" &&
+      (leg as Record<string, unknown>).__synthetic
+    ) {
+      return true;
+    }
+  }
+  return false;
 }
