@@ -18,9 +18,9 @@ interface ResizablePaneProps {
 export function ResizablePane({
   left,
   right,
-  defaultWidth = 480,
-  minWidth = 280,
-  maxWidth = 900,
+  defaultWidth = 640,
+  minWidth = 420,
+  maxWidth = 960,
 }: ResizablePaneProps) {
   const [width, setWidth] = useState(defaultWidth);
   const isDragging = useRef(false);

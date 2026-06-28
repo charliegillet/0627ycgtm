@@ -8,6 +8,8 @@ import {
   Radio,
   StopCircle,
   RotateCcw,
+  ChevronDown,
+  ChevronUp
 } from "lucide-react";
 import { 
   getAgentById, 
@@ -45,6 +47,7 @@ export function CommandOverlay({
   onResetAll,
 }: CommandOverlayProps) {
   const [query, setQuery] = useState("");
+  const [isLogMinimized, setIsLogMinimized] = useState(false);
   const logRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -111,52 +114,79 @@ export function CommandOverlay({
       {/* Signal/Log panel - right side */}
       {logs.length > 0 && (
         <div
-          ref={logRef}
-          className="fixed top-20 right-6 w-96 max-h-[calc(100vh-180px)] overflow-y-auto z-40 font-sans bg-zinc-950/80 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl p-4 flex flex-col gap-3"
+          className={`fixed top-20 right-6 w-96 font-sans bg-zinc-950/80 backdrop-blur-xl rounded-xl border border-white/10 shadow-2xl transition-all duration-300 z-40 ${
+            isLogMinimized ? "max-h-[50px] overflow-hidden" : "max-h-[calc(100vh-180px)] flex flex-col gap-3 p-4"
+          }`}
         >
-          <div className="text-xs font-semibold text-zinc-100 flex items-center justify-between pb-2 border-b border-white/5">
-            <div className="flex items-center gap-2">
-              <Radio size={12} className="text-zinc-400" />
-              Activity Log
+          {isLogMinimized ? (
+            <div 
+              className="flex items-center justify-between p-3 cursor-pointer hover:bg-white/5 transition-colors"
+              onClick={() => setIsLogMinimized(false)}
+            >
+              <div className="flex items-center gap-2 text-xs font-semibold text-zinc-100">
+                <Radio size={12} className="text-zinc-400" />
+                Activity Log
+                <span className="text-zinc-500 font-normal ml-1">
+                  ({logs.length})
+                </span>
+              </div>
+              <ChevronDown size={14} className="text-zinc-400" />
             </div>
-            <span className="text-zinc-500 font-normal">
-              {logs.length} entries
-            </span>
-          </div>
-          <div className="flex flex-col">
-            {logs.slice(0, 30).map((log, i) => {
-              const agent = getAgentById(log.agent_id);
-              return (
-                <div
-                  key={log._id || i}
-                  className={`py-3 border-b border-white/5 last:border-0 ${i === 0 ? 'animate-[fade-in_0.3s_ease]' : ''}`}
-                  style={{
-                    opacity: i === 0 ? 1 : Math.max(0.4, 1 - i * 0.05),
-                  }}
-                >
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span
-                      className="px-2 py-0.5 rounded-md text-[10px] font-semibold tracking-wide"
+          ) : (
+            <>
+              <div className="text-xs font-semibold text-zinc-100 flex items-center justify-between pb-2 border-b border-white/5">
+                <div className="flex items-center gap-2">
+                  <Radio size={12} className="text-zinc-400" />
+                  Activity Log
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="text-zinc-500 font-normal">
+                    {logs.length} entries
+                  </span>
+                  <button 
+                    onClick={() => setIsLogMinimized(true)}
+                    className="text-zinc-400 hover:text-zinc-100 transition-colors"
+                  >
+                    <ChevronUp size={14} />
+                  </button>
+                </div>
+              </div>
+              <div ref={logRef} className="flex flex-col overflow-y-auto pr-1" style={{ maxHeight: "calc(100vh - 240px)" }}>
+                {logs.slice(0, 30).map((log, i) => {
+                  const agent = getAgentById(log.agent_id);
+                  return (
+                    <div
+                      key={log._id || i}
+                      className={`py-3 border-b border-white/5 last:border-0 ${i === 0 ? 'animate-[fade-in_0.3s_ease]' : ''}`}
                       style={{
-                        background: `${agent.color}15`,
-                        color: agent.color,
-                        border: `1px solid ${agent.color}30`
+                        opacity: i === 0 ? 1 : Math.max(0.4, 1 - i * 0.05),
                       }}
                     >
-                      {agent.name}
-                    </span>
-                    <span className="text-zinc-500 text-xs font-mono">
-                      {new Date(log.timestamp * 1000).toLocaleTimeString()}
-                    </span>
-                  </div>
-                  <div className="flex items-start gap-2.5">
-                    <span className="text-sm mt-0.5">{getLogIcon(log.type)}</span>
-                    <span className="text-sm text-zinc-300 leading-relaxed flex-1">{log.message}</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                      <div className="flex items-center justify-between mb-1.5">
+                        <span
+                          className="px-2 py-0.5 rounded-md text-[10px] font-semibold tracking-wide"
+                          style={{
+                            background: `${agent.color}15`,
+                            color: agent.color,
+                            border: `1px solid ${agent.color}30`
+                          }}
+                        >
+                          {agent.name}
+                        </span>
+                        <span className="text-zinc-500 text-xs font-mono">
+                          {new Date(log.timestamp * 1000).toLocaleTimeString()}
+                        </span>
+                      </div>
+                      <div className="flex items-start gap-2.5">
+                        <span className="text-sm mt-0.5">{getLogIcon(log.type)}</span>
+                        <span className="text-sm text-zinc-300 leading-relaxed flex-1">{log.message}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
       )}
 

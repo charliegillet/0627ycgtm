@@ -125,8 +125,8 @@ export default function Home() {
   return (
     <div className="fixed inset-0 overflow-hidden bg-black text-zinc-100 font-sans">
       <ResizablePane
-        defaultWidth={520}
-        minWidth={320}
+        defaultWidth={640}
+        minWidth={420}
         maxWidth={960}
         left={<ContentWhiteboard items={items} isRunning={isRunning} />}
         right={
