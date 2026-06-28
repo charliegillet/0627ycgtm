@@ -83,14 +83,30 @@ export interface CompanyData {
   icpFit?: number;
 }
 
+// Action status for a company's latest action (drives the Approve/Block gate).
+export type ActionStatus =
+  | "pending"
+  | "approved"
+  | "blocked"
+  | "sent"
+  | "failed";
+
+export interface ActionData {
+  _id: string;
+  type: "slack" | "crm" | "email_draft";
+  status: ActionStatus;
+}
+
 // One card on the board. `liveBoard` returns scored companies joined with their
-// latest score; we also carry running-run state so cards can show "scoring…".
+// latest score; we also carry running-run state so cards can show "scoring…" and
+// the latest action so the card can render the Approve/Block gate.
 export interface BoardItem {
   _id: string;
   companyId: string;
   company: CompanyData;
   score: ScoreData | null;
   runStatus?: "running" | "succeeded" | "failed";
+  action?: ActionData | null;
 }
 
 // Per-signal-family colors used by leg badges + 3D planes.

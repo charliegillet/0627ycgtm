@@ -16,11 +16,16 @@ export const bridgeSignal = internalMutation({
     signalType: v.string(),
     // Optional explicit target plane; otherwise we pick one of 9.
     toAgent: v.optional(v.number()),
+    // Provenance of the underlying GTM event. A live-derived event must NOT be
+    // labeled synthetic in the log metadata; callers pass the real provenance.
+    // Defaults to false (live) so we never over-tag — fixture callers opt in.
+    synthetic: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const now = Date.now();
     const toAgent =
       args.toAgent ?? 1 + Math.floor(Math.random() * 9); // agents 1..9
+    const synthetic = args.synthetic ?? false;
 
     await ctx.db.insert("signals", {
       fromAgent: 0, // 0 = blackboard center
@@ -31,13 +36,14 @@ export const bridgeSignal = internalMutation({
     });
 
     // The logs table uses a constrained `type` union; map GTM signal types onto
-    // the closest existing visual category.
+    // the closest existing visual category. Tag __synthetic from actual
+    // provenance so live-derived log rows are not mislabeled.
     await ctx.db.insert("logs", {
       agent_id: toAgent,
       message: args.message,
       type: mapLogType(args.signalType),
       timestamp: now,
-      metadata: JSON.stringify({ signalType: args.signalType, __synthetic: true }),
+      metadata: JSON.stringify({ signalType: args.signalType, __synthetic: synthetic }),
     });
   },
 });

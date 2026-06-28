@@ -70,12 +70,15 @@ export const scoreCompany = internalAction({
         : `Scored ${data.name}: ${decision.score} (conf ${decision.confidence.toFixed(2)})`,
     });
 
-    // Bridge a viz signal so the scene reflects the decision.
+    // Bridge a viz signal so the scene reflects the decision. Provenance is the
+    // legs' provenance: a score derived from fixture legs is synthetic; a score
+    // from live legs is not, so the bridged log row is labeled honestly.
     await ctx.runMutation(internal.mutations.bridge.bridgeSignal, {
       message: decision.abstained
         ? `${data.name}: abstained (${decision.rubric.legsFired}/3)`
         : `${data.name}: scored ${decision.score}`,
       signalType: decision.abstained ? "abstain" : "score",
+      synthetic: rawLegsAreSynthetic(data.legs),
     });
 
     if (!decision.abstained) {
@@ -165,6 +168,28 @@ function normalizeLegs(raw: unknown): Legs {
     hiring: coerceLeg(blob.hiring),
     tech: coerceLeg(blob.tech),
   };
+}
+
+/**
+ * rawLegsAreSynthetic — inspect the RAW persisted legs blob (which still carries
+ * the __synthetic marker; normalizeLegs strips it) and report whether any leg
+ * came from a fixture. Live-derived legs never carry the marker, so a fully live
+ * score is not mislabeled synthetic.
+ */
+function rawLegsAreSynthetic(raw: unknown): boolean {
+  if (!raw || typeof raw !== "object") return false;
+  const blob = raw as Record<string, unknown>;
+  for (const name of ["funding", "hiring", "tech"]) {
+    const leg = blob[name];
+    if (
+      leg &&
+      typeof leg === "object" &&
+      (leg as Record<string, unknown>).__synthetic
+    ) {
+      return true;
+    }
+  }
+  return false;
 }
 
 function coerceLeg(value: unknown): Legs["funding"] {
