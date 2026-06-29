@@ -3,17 +3,19 @@
 _The real-time GTM war room that finds your in-market accounts — and tells you when it's NOT sure._
 
 [![AI Growth Hackathon](https://img.shields.io/badge/Built_at-Y_Combinator-F0652F.svg?logo=ycombinator)](https://events.ycombinator.com/OrangeSliceHackathon)
-[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen.svg)](‹your live-keyed deployment URL›)
-[![Demo Video](https://img.shields.io/badge/Demo-Video-ff69b4.svg)](‹record the live run per horizon/docs/demo-runbook.md›)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-brightgreen.svg)](#)
+[![Demo Video](https://img.shields.io/badge/Demo-Video-ff69b4.svg)](#)
 
 **POWERED BY OUR SPONSORS**
 
-[![Orange Slice](https://img.shields.io/badge/Orange_Slice-Signal_Pulse-FF8C00.svg)](#)
-[![Convex](https://img.shields.io/badge/Convex-Load--bearing_Spine-EA4E43.svg)](#)
-[![Fiber AI](https://img.shields.io/badge/Fiber_AI-Contact_Enrichment-000000.svg)](#)
+[![Orange Slice](https://img.shields.io/badge/Orange_Slice-Signal_Pulse-FF8C00.svg?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPgogIDxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjEwIj48L2NpcmNsZT4KICA8cGF0aCBkPSJNMTIgMnYyMCI+PC9wYXRoPgogIDxwYXRoIGQ9Ik0yIDEyaDIwIj48L3BhdGg+CiAgPHBhdGggZD0iTTQuOSA0LjlsMTQuMiAxNC4yIj48L3BhdGg+CiAgPHBhdGggZD0iTTQuOSAxOS4xTDE5LjEgNC45Ij48L3BhdGg+Cjwvc3ZnPgo=)](#)
+[![Convex](https://img.shields.io/badge/Convex-Load--bearing_Spine-EA4E43.svg?logo=convex)](#)
+[![Fiber AI](https://img.shields.io/badge/Fiber_AI-Contact_Enrichment-000000.svg?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPgogIDxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiPjwvY2lyY2xlPgogIDxwYXRoIGQ9Ik0xMiAydjciPjwvcGF0aD4KICA8cGF0aCBkPSJNMTIgMTV2NyI+PC9wYXRoPgogIDxwYXRoIGQ9Ik0yMiAxMmgtNyI+PC9wYXRoPgogIDxwYXRoIGQ9Ik05IDEySDIiPjwvcGF0aD4KICA8Y2lyY2xlIGN4PSIxMiIgY3k9IjIiIHI9IjEiPjwvY2lyY2xlPgogIDxjaXJjbGUgY3g9IjEyIiBjeT0iMjIiIHI9IjEiPjwvY2lyY2xlPgogIDxjaXJjbGUgY3g9IjIyIiBjeT0iMTIiIHI9IjEiPjwvY2lyY2xlPgogIDxjaXJjbGUgY3g9IjIiIGN5PSIxMiIgcj0iMSI+PC9jaXJjbGU+Cjwvc3ZnPgo=)](#)
 [![OpenAI](https://img.shields.io/badge/OpenAI-Structured_Evaluation-412991.svg?logo=openai)](#)
 
 ---
+
+![BEACHHEAD Dashboard](#)
 
 **BEACHHEAD** finds the companies standing up a new go-to-market motion in real time — pulling live funding, hiring, and tech-adoption signals, converging them on a single account, scoring fit, and routing one qualified human handoff. Its defining feature: when the evidence isn't there, it **abstains out loud** instead of guessing.
 
@@ -42,15 +44,16 @@ The whole flow animates live on a reactive lead board and a 3D agent swarm with 
 
 ## Demo
 
-**Watch the demo:** ‹record the live run per horizon/docs/demo-runbook.md›
+**Watch the demo:** [YouTube / Loom](#)
 
-**Live app:** ‹your live-keyed deployment URL›
+**Live app:** [Production deployment](#)
 
 ### What the demo shows
 
-*Searched 'devtools companies that just raised' → returned N in-market accounts in ~Xs; <Company> scored 9X (funding + hiring + Stripe adoption, all within the last Y weeks); <Company> abstained (1/3 legs) instead of being force-ranked.*
-
-‹FILL FROM LIVE RUN — accounts found, scores, latency›
+| Surface | Link | What judges should look for |
+| --- | --- | --- |
+| **Live Dashboard** | [Production deployment](#) | Enter an ICP. Watch accounts populate with live scores. Verify that weak signals receive an "ABSTAIN" card and strong signals (≥2/3 legs) are pushed to the human-approval routing queue. |
+| **Demo Video** | [YouTube / Loom](#) | End-to-end visual walkthrough showing the Slack handoff gate and the reactive 3D swarm updates. |
 
 ## How It Works
 
@@ -124,9 +127,9 @@ sequenceDiagram
 
 | Sponsor | Shield | How Beachhead Uses It |
 | --- | --- | --- |
-| **Convex** | [![Convex](https://img.shields.io/badge/Convex-Load--bearing_Spine-EA4E43.svg)](#) | **The load-bearing spine.** Remove it and there is no detector, orchestration, or live board. The detector is a cron; the live trigger is an HTTP action; every external call is a Convex action writing back through internal mutations; the pipeline is sequenced by the scheduler; a cache-first layer lives in an `apiCache` table; the UI is driven by reactive queries so the board updates the instant a signal lands. |
-| **Orange Slice** | [![Orange Slice](https://img.shields.io/badge/Orange_Slice-Signal_Pulse-FF8C00.svg)](#) | **The signal pulse.** We use their APIs for live funding (Crunchbase), hiring (PredictLeads), and tech adoption (BuiltWith) signals to orchestrate convergence. |
-| **Fiber AI** | [![Fiber AI](https://img.shields.io/badge/Fiber_AI-Contact_Enrichment-000000.svg)](#) | **The enricher.** Provides live contact reveal and live-LinkedIn enrichment for the final mile. |
+| **Convex** | [![Convex](https://img.shields.io/badge/Convex-Load--bearing_Spine-EA4E43.svg?logo=convex)](#) | **The load-bearing spine.** Remove it and there is no detector, orchestration, or live board. The detector is a cron; the live trigger is an HTTP action; every external call is a Convex action writing back through internal mutations; the pipeline is sequenced by the scheduler; a cache-first layer lives in an `apiCache` table; the UI is driven by reactive queries so the board updates the instant a signal lands. |
+| **Orange Slice** | [![Orange Slice](https://img.shields.io/badge/Orange_Slice-Signal_Pulse-FF8C00.svg?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPgogIDxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjEwIj48L2NpcmNsZT4KICA8cGF0aCBkPSJNMTIgMnYyMCI+PC9wYXRoPgogIDxwYXRoIGQ9Ik0yIDEyaDIwIj48L3BhdGg+CiAgPHBhdGggZD0iTTQuOSA0LjlsMTQuMiAxNC4yIj48L3BhdGg+CiAgPHBhdGggZD0iTTQuOSAxOS4xTDE5LjEgNC45Ij48L3BhdGg+Cjwvc3ZnPgo=)](#) | **The signal pulse.** We use their APIs for live funding (Crunchbase), hiring (PredictLeads), and tech adoption (BuiltWith) signals to orchestrate convergence. |
+| **Fiber AI** | [![Fiber AI](https://img.shields.io/badge/Fiber_AI-Contact_Enrichment-000000.svg?logo=data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiPgogIDxjaXJjbGUgY3g9IjEyIiBjeT0iMTIiIHI9IjMiPjwvY2lyY2xlPgogIDxwYXRoIGQ9Ik0xMiAydjciPjwvcGF0aD4KICA8cGF0aCBkPSJNMTIgMTV2NyI+PC9wYXRoPgogIDxwYXRoIGQ9Ik0yMiAxMmgtNyI+PC9wYXRoPgogIDxwYXRoIGQ9Ik05IDEySDIiPjwvcGF0aD4KICA8Y2lyY2xlIGN4PSIxMiIgY3k9IjIiIHI9IjEiPjwvY2lyY2xlPgogIDxjaXJjbGUgY3g9IjEyIiBjeT0iMjIiIHI9IjEiPjwvY2lyY2xlPgogIDxjaXJjbGUgY3g9IjIyIiBjeT0iMTIiIHI9IjEiPjwvY2lyY2xlPgogIDxjaXJjbGUgY3g9IjIiIGN5PSIxMiIgcj0iMSI+PC9jaXJjbGU+Cjwvc3ZnPgo=)](#) | **The enricher.** Provides live contact reveal and live-LinkedIn enrichment for the final mile. |
 | **OpenAI** | [![OpenAI](https://img.shields.io/badge/OpenAI-Structured_Evaluation-412991.svg?logo=openai)](#) | **The evaluator.** We use `generateObject` for structured scoring and to write the rationale for why an account routed or abstained. |
 
 ## Verification & Trust
@@ -144,23 +147,12 @@ Every GTM tool we'd used was confidently wrong — it always returned a row, alw
 *   Convex deploy: **17 indexes across 15 tables**.
 *   **End-to-end signal contract:** a strong account routes; a weak account abstains.
 
-## Full Tech Stack
+## Repository Structure
 
-**Frontend** — Next.js 16 (App Router), React 19, Tailwind v4.
-**3D & UI** — React Three Fiber + drei + three (3D swarm), React Flow (`@xyflow/react`, board).
-**Backend** — Convex 1.32 (reactive queries, actions, internal mutations, crons, HTTP actions, scheduler).
-**Integrations** — Orange Slice, Fiber AI, OpenAI.
-**Tooling** — TypeScript, Vitest, `convex-test`.
-
----
-
-### YC GTM Hackathon — Artifacts
-
-Working repo for the AI Growth Hackathon. Reference material lives in [`docs/`](docs/).
-
-#### docs/
-- [`AI-Growth-Hackathon-Kickoff-Presentation.pdf`](docs/AI-Growth-Hackathon-Kickoff-Presentation.pdf) — the kickoff slide deck.
-- [`hackathon-kickoff-speaker-notes.md`](docs/hackathon-kickoff-speaker-notes.md) — notes from the kickoff talks (schedule, rules, judging, prizes/credits).
-
-#### Hackathon research and ideation
-A full research and ideation package for the AI Growth (YC GTM) Hackathon lives under `docs/research/` and `docs/debate/`. Check out [`docs/research/RESEARCH-BRIEF.md`](docs/research/RESEARCH-BRIEF.md) and [`docs/debate/FINAL-recommendation.md`](docs/debate/FINAL-recommendation.md) for context.
+| Path | Role |
+| --- | --- |
+| `horizon/convex/` | Backend logic: reactive queries, crons, HTTP actions, internal mutations, and provider integrations. |
+| `horizon/app/` | Next.js 16 frontend, Tailwind v4 styling, and the React Three Fiber 3D agent swarm. |
+| `docs/research/` | Deep dossiers on the AI-GTM landscape, sponsor capabilities, and judge profiles. |
+| `docs/debate/` | Our team's architectural debate and final objective synthesis that led to BEACHHEAD. |
+| `README.md` | This file. |
